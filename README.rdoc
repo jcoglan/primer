@@ -1,0 +1,58 @@
+= Primer
+
+This is an experiment to bring automatic cache expiry and possibly regeneration
+to Rails. At Songkick[http://www.songkick.com], we have a ton of code that deals
+with caches and denormalization and it's hard to maintain. I want to get rid of
+it. All of it.
+
+
+== What?
+
+Inspired by LunaScript[http://asana.com/luna] and Fun[http://marcuswest.in/read/fun-intro/],
+I figured Ruby could figure out which values a computation uses, and use that to
+expire caches for you without having to write any expiry code. This turns out to be
+possible, at least for mainstream ActiveRecord usage, and Primer includes an engine
+for that.
+
+What's not clear at this stage is whether we can automatically pre-generate data to
+warm up caches. This is probably impossible to completely automate, but at least we
+can separate the code for how to compute something from the code that deals with
+knowing when a cache value should change.
+
+
+== Enough waffle, show me the code!
+
+Get your ActiveRecord model, put a mixin in it:
+
+  class BlogPost < ActiveRecord::Base
+    include Primer::Watcher
+  end
+
+Set up a cache for your app (you need Redis[http://code.google.com/p/redis/]):
+
+  Primer.cache = Primer::Cache::Redis.new(:host => "10.0.1.1", :port => 6380)
+
+Throw a helper in your views:
+
+  # Rails
+  module ApplicationHelper
+    include Primer::Helpers::ERB
+  end
+  
+  # Sinatra
+  helpers { include Primer::Helpers::ERB }
+
+Wrap cache blocks around your markup for expensive bits:
+
+  <% primer "/posts/1/title" do %>
+    <%= @post.title.upcase %>
+  <% end %>
+
+The block gets cached. The cache is expired when the post's title changes. You
+don't need to write any code for this.
+
+
+== Copyright
+
+Copyright (c) 2010 Songkick.com
+
