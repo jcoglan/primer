@@ -1,10 +1,13 @@
+require 'set'
+
 module Primer
   module Cache
     
     class Memory
       def initialize
-        @data_store = {}
-        @relations  = {}
+        @data_store   = {}
+        @relations    = {}
+        @dependencies = {}
       end
       
       def compute(cache_key, &block)
@@ -31,12 +34,19 @@ module Primer
       
       def invalidate(cache_key)
         @data_store.delete(cache_key)
+        return unless deps = @dependencies[cache_key]
+        deps.each do |attribute|
+          @relations[attribute].delete(cache_key)
+        end
+        @dependencies.delete(cache_key)
       end
       
       def relate(cache_key, attributes)
+        deps = @dependencies[cache_key] ||= Set.new
         attributes.each do |attribute|
-          list = @relations[attribute] ||= []
-          list << cache_key
+          deps.add(attribute)
+          list = @relations[attribute] ||= Set.new
+          list.add(cache_key)
         end
       end
       

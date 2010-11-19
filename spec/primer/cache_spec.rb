@@ -10,11 +10,11 @@ describe Primer::Cache do
     @person.destroy
   end
   
+  def compute_value
+    @cache.compute("/people/abe/name") { @person.name }
+  end
+  
   describe "#compute" do
-    def compute_value
-      @cache.compute("/people/abe/name") { @person.name }
-    end
-    
     it "returns the value of the block" do
       compute_value.should == "Abe"
     end
@@ -64,6 +64,16 @@ describe Primer::Cache do
     it "removes the key from the cache" do
       @cache.invalidate("/some/key")
       @cache.get("/some/key").should be_nil
+    end
+    
+    describe "when a cache value has been generated from a computation" do
+      before { compute_value }
+      
+      it "removes existing relations between the model and the cache" do
+        @cache.invalidate("/people/abe/name")
+        @cache.should_not_receive(:invalidate)
+        @person.update_attribute(:name, "Weeble")
+      end
     end
   end
 end
