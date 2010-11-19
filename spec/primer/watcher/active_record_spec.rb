@@ -3,6 +3,14 @@ require 'spec_helper'
 describe Primer::Watcher::ActiveRecordMacros do
   class Person < ActiveRecord::Base
     include Primer::Watcher
+    
+    def all_attributes
+      [id, the_name]
+    end
+    
+    def the_name
+      name
+    end
   end
   
   before do
@@ -21,6 +29,14 @@ describe Primer::Watcher::ActiveRecordMacros do
   it "automatically watches ActiveRecord attributes" do
     @person.name.should == "Abe"
     Primer::Watcher.call_log.should == [[@person, :name, [], nil, "Abe"]]
+  end
+  
+  it "logs calls made inside other methods" do
+    @person.all_attributes.should == [3, "Abe"]
+    Primer::Watcher.call_log.should == [
+      [@person, :id,   [], nil, 3    ],
+      [@person, :name, [], nil, "Abe"]
+    ]
   end
 end
 
