@@ -5,6 +5,19 @@ module Primer
       def self.extended(klass)
         attributes = klass.columns.map { |c| c.name }
         klass.watch_calls_to(*attributes)
+        
+        klass.class_eval do
+          def primer_identifier
+            ['ActiveRecord', self.class.name, read_attribute(self.class.primary_key)]
+          end
+          
+          def notify_primer_after_update
+            changes.each do |attribute, (old_value, new_value)|
+              Primer.cache.changed(primer_identifier + [attribute.to_s])
+            end
+          end
+        end
+        klass.after_update(:notify_primer_after_update)
       end
       
       def patch_method_for_primer(method_name)

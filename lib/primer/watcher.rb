@@ -45,6 +45,10 @@ module Primer
       result
     end
     
+    def primer_identifier
+      ['Object', self.class.name, object_id]
+    end
+    
   end
 end
 

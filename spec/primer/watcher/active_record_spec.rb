@@ -10,6 +10,12 @@ describe Primer::Watcher::ActiveRecordMacros do
     @person.destroy
   end
   
+  describe "#primer_identifier" do
+    it "returns a tuple that tells us enough to find the object" do
+      @person.primer_identifier.should == ["ActiveRecord", "Person", @person.id]
+    end
+  end
+  
   it "is mixed in automatically when using Primer with ActiveRecord" do
     Person.should be_kind_of(Primer::Watcher::ActiveRecordMacros)
   end

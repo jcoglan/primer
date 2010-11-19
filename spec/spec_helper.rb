@@ -9,7 +9,8 @@ ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':me
 
 ActiveRecord::Schema.define do |version|
   create_table :people, :force => true do |t|
-    t.string :name
+    t.string  :name
+    t.integer :age
   end
 end
 

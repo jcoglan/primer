@@ -3,6 +3,12 @@ require 'spec_helper'
 describe Primer::Watcher do
   let(:watchable) { Watchable.new("Aaron") }
   
+  describe "#primer_identifier" do
+    it "returns a tuple that tells us enough to find the object" do
+      watchable.primer_identifier.should == ["Object", "Watchable", watchable.object_id]
+    end
+  end
+  
   describe "with watching disabled" do
     before { Primer::Watcher.disable! }
     
