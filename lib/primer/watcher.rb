@@ -17,11 +17,13 @@ module Primer
         @primer_patched = true
         
         @primer_watched_calls.each do |method_name|
+          safe_name = method_name.to_s.gsub(/[^a-z0-9_]$/i, '')
           class_eval <<-RUBY
-            alias :#{method_name}_before_primer_patch :#{method_name}
+            alias :#{safe_name}_before_primer_patch :#{method_name}
             def #{method_name}(*args, &block)
-              Primer::Watcher.call_log << [self, :#{method_name}]
-              #{method_name}_before_primer_patch(*args, &block)
+              result = #{safe_name}_before_primer_patch(*args, &block)
+              Primer::Watcher.call_log << [self, :#{method_name}, args, block, result]
+              result
             end
           RUBY
         end
@@ -33,9 +35,10 @@ module Primer
         @primer_patched = false
         
         @primer_watched_calls.each do |method_name|
+          safe_name = method_name.to_s.gsub(/[^a-z0-9_]$/i, '')
           class_eval <<-RUBY
-            alias :#{method_name} :#{method_name}_before_primer_patch
-            undef_method :#{method_name}_before_primer_patch
+            alias :#{method_name} :#{safe_name}_before_primer_patch
+            undef_method :#{safe_name}_before_primer_patch
           RUBY
         end
       end
