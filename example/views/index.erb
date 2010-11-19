@@ -1,0 +1,8 @@
+<p>Look at all the awesome posts omg</p>
+
+<ul>
+  <% @posts.each do |post| %>
+    <li><a href="/posts/<%= post.id %>"><%= post.title.upcase %></a></li>
+  <% end %>
+</ul>
+

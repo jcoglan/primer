@@ -2,8 +2,8 @@ module Primer
   module Watcher
     
     extend Enabler
-    autoload :Macros,             'primer/watcher/macros'
-    autoload :ActiveRecordMacros, 'primer/watcher/active_record_macros'
+    autoload :Macros,             ROOT + '/primer/watcher/macros'
+    autoload :ActiveRecordMacros, ROOT + '/primer/watcher/active_record_macros'
     
     def self.included(klass)
       klass.extend(Macros)

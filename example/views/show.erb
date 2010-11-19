@@ -1,0 +1,7 @@
+<h2><%= @post.title.upcase %></h2>
+<h5>By <%= @post.author %></h5>
+
+<% primer("/posts/#{@post.id}/body") do %>
+  <p><%= @post.body %></p>
+<% end %>
+

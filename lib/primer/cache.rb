@@ -1,7 +1,7 @@
 module Primer
   class Cache
-    autoload :Memory, 'primer/cache/memory'
-    autoload :Redis,  'primer/cache/redis'
+    autoload :Memory, ROOT + '/primer/cache/memory'
+    autoload :Redis,  ROOT + '/primer/cache/redis'
     
     def compute(cache_key, &block)
       return get(cache_key) if has_key?(cache_key)
