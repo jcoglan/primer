@@ -6,11 +6,12 @@ unless $loaded_cache_spec
 shared_examples_for "primer cache" do
   before do
     Primer.cache = cache
-    @person = Person.create(:name => "Abe")
+    @person   = Person.create(:name => "Abe")
+    @impostor = Person.create(:name => "Aaron")
   end
   
   after do
-    @person.destroy
+    Person.destroy_all
   end
   
   def compute_value
@@ -52,6 +53,11 @@ shared_examples_for "primer cache" do
       it "invalidates the cache when related data changes" do
         cache.should_receive(:invalidate).with("/people/abe/name")
         @person.update_attribute(:name, "Aaron")
+      end
+      
+      it "does not invalidate the cache when a different object changes" do
+        cache.should_not_receive(:invalidate)
+        @impostor.update_attribute(:name, "Weeble")
       end
       
       it "does not invalidate the cache when unrelated data changes" do
