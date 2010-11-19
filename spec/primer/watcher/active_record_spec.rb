@@ -1,18 +1,6 @@
 require 'spec_helper'
 
 describe Primer::Watcher::ActiveRecordMacros do
-  class Person < ActiveRecord::Base
-    include Primer::Watcher
-    
-    def all_attributes
-      [id, the_name]
-    end
-    
-    def the_name
-      name
-    end
-  end
-  
   before do
     @person = Person.create(:name => "Abe")
     Primer::Watcher.enable!

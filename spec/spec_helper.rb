@@ -13,6 +13,9 @@ ActiveRecord::Schema.define do |version|
   end
 end
 
+require 'models/watchable'
+require 'models/person'
+
 RSpec.configure do |config|
   config.before do
     Primer::Watcher.disable!
