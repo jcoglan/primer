@@ -54,5 +54,5 @@ don't need to write any code for this.
 
 == Copyright
 
-Copyright (c) 2010 Songkick.com
+Copyright (c) 2010 Songkick.com. Named by the inimitable grillpanda[http://github.com/grillpanda]
 
