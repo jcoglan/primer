@@ -33,7 +33,7 @@ module Primer
           alias :#{alias_name} :#{method_name}
           def #{method_name}(*args, &block)
             result = #{alias_name}(*args, &block)
-            Primer::Watcher.call_log << [self, :#{method_name}, args, block, result]
+            Primer::Watcher.log(self, :#{method_name}, args, block, result)
             result
           end
         RUBY

@@ -13,7 +13,7 @@ module Primer
         class_eval <<-RUBY
           def #{method_name}
             result = read_attribute(:#{method_name})
-            Primer::Watcher.call_log << [self, :#{method_name}, [], nil, result]
+            Primer::Watcher.log(self, :#{method_name}, [], nil, result)
             result
           end
         RUBY

@@ -13,10 +13,20 @@ module Primer
     
     def self.reset!
       Thread.current[:primer_call_log] = []
+      Thread.current[:primer_loggers]  = nil
     end
     
     def self.call_log
       Thread.current[:primer_call_log]
+    end
+    
+    def self.log(receiver, method_name, args, block, result)
+      call = [receiver, method_name, args, block, result]
+      loggers.each { |logger| logger << call }
+    end
+    
+    def self.loggers
+      Thread.current[:primer_loggers] ||= [call_log]
     end
     
     def self.on_enable
@@ -25,6 +35,14 @@ module Primer
     
     def self.on_disable
       @classes.each { |klass| klass.unpatch_for_primer! }
+    end
+    
+    def self.watching(calls = [])
+      enable!
+      loggers << calls
+      result = yield
+      loggers.pop
+      result
     end
     
   end

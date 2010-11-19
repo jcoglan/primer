@@ -68,5 +68,39 @@ describe Primer::Watcher do
       Primer::Watcher.call_log.should be_empty
     end
   end
+  
+  describe ".watching" do
+    it "returns the value of the block" do
+      Primer::Watcher.watching { watchable.name }.should == "Aaron"
+    end
+    
+    it "logs calls during the block to a list you supply" do
+      calls = []
+      Primer::Watcher.watching(calls) { watchable.name }
+      calls.should == [[watchable, :name, [], nil, "Aaron"]]
+    end
+    
+    it "allows nested blocks to just capture specific scopes" do
+      block = lambda {}
+      
+      all_calls, inner_calls = [], []
+      Primer::Watcher.watching(all_calls) do
+        watchable.name
+        Primer::Watcher.watching(inner_calls) do
+          watchable.is_called?("Abe")
+        end
+        watchable.is_called?("Aaron", &block)
+      end
+      
+      all_calls.should == [
+        [watchable, :name,       [],        nil,   "Aaron"],
+        [watchable, :is_called?, ["Abe"],   nil,   false  ],
+        [watchable, :is_called?, ["Aaron"], block, true   ]
+      ]
+      inner_calls.should == [
+        [watchable, :is_called?, ["Abe"],   nil,   false  ]
+      ]
+    end
+  end
 end
 
