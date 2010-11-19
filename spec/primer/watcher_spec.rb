@@ -41,6 +41,12 @@ describe Primer::Watcher do
       watchable.name
       Primer::Watcher.call_log.should == [[watchable, :name]]
     end
+    
+    it "does not log after you disable the watcher" do
+      Primer::Watcher.disable!
+      watchable.name
+      Primer::Watcher.call_log.should be_empty
+    end
   end
 end
 

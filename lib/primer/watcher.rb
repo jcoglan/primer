@@ -14,17 +14,14 @@ module Primer
       def patch_for_primer!
         return if @primer_watched_calls.nil? or @primer_patched
         
-        @primer_patched_methods = {}
         @primer_patched = true
         
         @primer_watched_calls.each do |method_name|
-          @primer_patched_methods[method_name] = instance_method(method_name)
           class_eval <<-RUBY
+            alias :#{method_name}_before_primer_patch :#{method_name}
             def #{method_name}(*args, &block)
-              method = self.class.instance_eval { @primer_patched_methods[:#{method_name}] }
-              result = method.bind(self).call(*args, &block)
               Primer::Watcher.call_log << [self, :#{method_name}]
-              result
+              #{method_name}_before_primer_patch(*args, &block)
             end
           RUBY
         end
@@ -32,6 +29,15 @@ module Primer
       
       def unpatch_for_primer!
         return if @primer_watched_calls.nil? or not @primer_patched
+        
+        @primer_patched = false
+        
+        @primer_watched_calls.each do |method_name|
+          class_eval <<-RUBY
+            alias :#{method_name} :#{method_name}_before_primer_patch
+            undef_method :#{method_name}_before_primer_patch
+          RUBY
+        end
       end
     end
     
