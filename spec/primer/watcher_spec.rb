@@ -19,7 +19,6 @@ describe Primer::Watcher do
   end
   
   let(:watchable) { Watchable.new("Aaron") }
-  after { Primer::Watcher.reset! }
   
   describe "with watching disabled" do
     before { Primer::Watcher.disable! }
