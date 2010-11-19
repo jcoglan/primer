@@ -17,7 +17,7 @@ module Primer
     end
     
     def self.call_log
-      Thread.current[:primer_call_log]
+      Thread.current[:primer_call_log] ||= []
     end
     
     def self.log(receiver, method_name, args, block, result)
