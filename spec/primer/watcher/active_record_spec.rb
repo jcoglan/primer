@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Primer::Watcher::ActiveRecordMacros do
   before do
     @person = Person.create(:name => "Abe")
+    @id = @person.id
     Primer::Watcher.enable!
   end
   
@@ -26,9 +27,9 @@ describe Primer::Watcher::ActiveRecordMacros do
   end
   
   it "logs calls made inside other methods" do
-    @person.all_attributes.should == [3, "Abe"]
+    @person.all_attributes.should == [@id, "Abe"]
     Primer::Watcher.call_log.should == [
-      [@person, :id,   [], nil, 3    ],
+      [@person, :id,   [], nil, @id  ],
       [@person, :name, [], nil, "Abe"]
     ]
   end
