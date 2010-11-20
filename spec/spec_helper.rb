@@ -17,7 +17,6 @@ end
 
 require 'models/watchable'
 require 'models/person'
-require 'primer/cache_spec'
 
 RSpec.configure do |config|
   config.before do

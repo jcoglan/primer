@@ -1,7 +1,4 @@
 require 'spec_helper'
-
-unless $loaded_cache_spec
-  $loaded_cache_spec = true
   
 shared_examples_for "primer cache" do
   before do
@@ -101,5 +98,13 @@ shared_examples_for "primer cache" do
   end
 end
 
+describe Primer::Cache::Memory do
+  let(:cache) { Primer::Cache::Memory.new }
+  it_should_behave_like "primer cache"
+end
+
+describe Primer::Cache::Redis do
+  let(:cache) { Primer::Cache::Redis.new }
+  it_should_behave_like "primer cache"
 end
 
