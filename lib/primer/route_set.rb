@@ -1,9 +1,5 @@
 require 'sinatra'
 
-class Sinatra::Application
-  def self.run? ; false ; end
-end
-
 module Primer
   class RouteSet
     def initialize(&routes)
