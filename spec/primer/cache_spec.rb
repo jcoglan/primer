@@ -12,23 +12,25 @@ shared_examples_for "primer cache" do
   end
   
   describe "#compute" do
-    it "returns the value of the block" do
-      compute_value.should == "Abe"
-    end
-    
-    it "calls the implementation to get the value" do
-      @person.should_receive(:name)
-      compute_value
-    end
-    
-    it "stores the result of the computation" do
-      cache.should_receive(:put).with("/people/abe/name", "Abe")
-      compute_value
-    end
-    
-    it "notes that the value is related to some ActiveRecord data" do
-      cache.should_receive(:relate).with("/people/abe/name", [["ActiveRecord", "Person", @person.id, "name"]])
-      compute_value
+    describe "using a block" do
+      it "returns the value of the block" do
+        compute_value.should == "Abe"
+      end
+      
+      it "calls the implementation to get the value" do
+        @person.should_receive(:name)
+        compute_value
+      end
+      
+      it "stores the result of the computation" do
+        cache.should_receive(:put).with("/people/abe/name", "Abe")
+        compute_value
+      end
+      
+      it "notes that the value is related to some ActiveRecord data" do
+        cache.should_receive(:relate).with("/people/abe/name", [["ActiveRecord", "Person", @person.id, "name"]])
+        compute_value
+      end
     end
     
     describe "when the value is already known" do
@@ -56,6 +58,41 @@ shared_examples_for "primer cache" do
       it "does not invalidate the cache when unrelated data changes" do
         cache.should_not_receive(:invalidate)
         @person.update_attribute(:age, 28)
+      end
+    end
+    
+    describe "with no block" do
+      before do
+        cache.routes = Primer::RouteSet.new do
+          get('/foo')     { Person.first.name }
+          get('/bar/:id') { params[:id] }
+        end
+      end
+      
+      it "uses the routes to find the right value" do
+        cache.compute("/foo").should == "Abe"
+      end
+      
+      it "stores the result of the computation" do
+        cache.should_receive(:put).with("/foo", "Abe")
+        cache.compute("/foo")
+      end
+      
+      it "notes that the value is related to some ActiveRecord data" do
+        cache.should_receive(:relate).with("/foo", [["ActiveRecord", "Person", @person.id, "name"]])
+        cache.compute("/foo")
+      end
+      
+      it "handles routing patterns and params" do
+        cache.should_receive(:put).with("/bar/pattern_match", "pattern_match")
+        cache.should_receive(:relate).with("/bar/pattern_match", [])
+        cache.compute("/bar/pattern_match").should == "pattern_match"
+      end
+      
+      it "returns nil for paths that don't match anything" do
+        cache.should_not_receive(:put)
+        cache.should_not_receive(:relate)
+        cache.compute("/qux").should be_nil
       end
     end
   end
