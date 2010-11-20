@@ -1,17 +1,16 @@
 require 'spec_helper'
 
-class Context
+module RenderingHelper
   include Primer::Helpers::ERB
   attr_accessor :name
-  
-  def initialize(name)
-    @name = name
-  end
+end
+
+class Context
+  include RenderingHelper
 end
 
 shared_examples_for "erb helper" do
-  let(:context) { Context.new("Aaron") }
-  let(:output)  { erb.render(context) }
+  before { context.name = "Aaron" }
   
   before do
     Primer.cache = Primer::Cache::Memory.new
@@ -49,8 +48,37 @@ shared_examples_for "erb helper" do
   end
 end
 
+describe "Rails3 ERB templates" do
+  class ApplicationController < ActionController::Base
+    def self._helpers
+      RenderingHelper
+    end
+  end
+  
+  before do
+    view_context = context
+    controller.stub(:view_context).and_return(view_context)
+  end
+  
+  let(:controller) { ApplicationController.new }
+  let(:context)    { controller.view_context   }
+
+  let :output do
+    controller.render(:file => "spec/templates/page.erb", :action => "show") rescue
+    controller.response_body.first
+  end
+  
+  it_should_behave_like "erb helper"
+end
+
 describe "Sinatra ERB templates" do
-  let(:erb) { Tilt[:erb].new("spec/templates/page.erb", 0, :outvar => "@_out_buf") }
+  let(:context) { Context.new }
+  
+  let :output do
+    template = Tilt[:erb].new("spec/templates/page.erb", 0, :outvar => "@_out_buf")
+    template.render(context)
+  end
+  
   it_should_behave_like "erb helper"
 end
 
