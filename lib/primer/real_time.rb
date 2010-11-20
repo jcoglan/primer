@@ -18,8 +18,30 @@ module Primer
       [200, TYPE_SCRIPT, [SCRIPT_SOURCE]]
     end
     
-    def self.dom_id(cache_key)
-      "primer#{ ('-' + cache_key).gsub(/[^a-z0-9]+/i, '-') }"
+    class << self
+      attr_accessor :bayeux_server
+      
+      def dom_id(cache_key)
+        "primer#{ ('-' + cache_key).gsub(/[^a-z0-9]+/i, '-') }"
+      end
+      
+      def publish(cache_key, value)
+        return unless Primer.real_time
+        client.publish(cache_key,
+          :dom_id  => dom_id(cache_key),
+          :content => value
+        )
+      end
+      
+    private
+      
+      def client
+        raise NotConfigured.new unless bayeux_server
+        Faye.ensure_reactor_running!
+        return @client if @client
+        endpoint = "#{ bayeux_server }#{ BAYEUX_CONFIG[:mount] }"
+        @client = Faye::Client.new(endpoint)
+      end
     end
     
   end

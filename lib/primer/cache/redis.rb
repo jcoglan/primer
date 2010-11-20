@@ -14,6 +14,7 @@ module Primer
       
       def put(cache_key, value)
         @redis.set(cache_key, value)
+        RealTime.publish(cache_key, value)
       end
       
       def get(cache_key)
@@ -26,6 +27,7 @@ module Primer
       
       def invalidate(cache_key)
         @redis.del(cache_key)
+        
         return unless has_key?('deps' + cache_key)
         @redis.smembers('deps' + cache_key).each do |attribute|
           @redis.srem(attribute, cache_key)

@@ -7,7 +7,9 @@ class Application < Sinatra::Base
   
   require ROOT + '/../lib/primer'
   Primer.cache = Primer::Cache::Redis.new
+  
   Primer.real_time = true
+  Primer::RealTime.bayeux_server = 'http://0.0.0.0:9292'
   
   require ROOT + '/models/connection'
   require ROOT + '/models/blog_post'
