@@ -69,6 +69,12 @@ describe Primer::Watcher do
       calls.should == [[watchable, :name, [], nil, "Aaron"]]
     end
     
+    it "does not log calls outside of the block" do
+      Primer::Watcher.watching { watchable.name }
+      watchable.name
+      Primer::Watcher.call_log.should == [[watchable, :name, [], nil, "Aaron"]]
+    end
+    
     it "allows nested blocks to just capture specific scopes" do
       block = lambda {}
       

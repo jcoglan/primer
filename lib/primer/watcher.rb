@@ -38,10 +38,15 @@ module Primer
     end
     
     def self.watching(calls = [])
+      @active_watching_blocks ||= 0
+      @active_watching_blocks += 1
+      was_enabled = enabled?
       enable!
       loggers << calls
       result = yield
       loggers.pop
+      @active_watching_blocks -= 1
+      disable! if @active_watching_blocks.zero? and not was_enabled
       result
     end
     
