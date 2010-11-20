@@ -23,6 +23,7 @@ RSpec.configure do |config|
   config.before do
     Primer::Watcher.disable!
     Primer.cache = nil
+    Primer.real_time = false
   end
   
   config.after do

@@ -9,9 +9,10 @@ module Primer
   autoload :Enabler,  ROOT + '/primer/enabler'
   autoload :Watcher,  ROOT + '/primer/watcher'
   autoload :Helpers,  ROOT + '/primer/helpers'
+  autoload :RealTime, ROOT + '/primer/real_time'
   
   class << self
-    attr_accessor :cache
+    attr_accessor :cache, :real_time
   end
 end
 

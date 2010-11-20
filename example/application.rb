@@ -5,17 +5,21 @@ require 'active_record'
 class Application < Sinatra::Base
   ROOT = File.expand_path(File.dirname(__FILE__))
   
-  # Load Primer and models
   require ROOT + '/../lib/primer'
+  Primer.cache = Primer::Cache::Redis.new
+  Primer.real_time = true
+  
   require ROOT + '/models/connection'
   require ROOT + '/models/blog_post'
-  Primer.cache = Primer::Cache::Redis.new
+  
+  # Set up cache generators
+  Primer.cache.routes = Primer::RouteSet.new do
+    get('/posts/:id/author') { BlogPost.find(params[:id]).author }
+  end
   
   # Configure Sinatra
   set :views, ROOT + '/views'
   helpers { include Primer::Helpers::ERB }
-  
-  # Make the routes
   
   get '/' do
     @posts = BlogPost.all
