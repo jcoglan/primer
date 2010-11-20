@@ -4,8 +4,12 @@ module Primer
     module ERB
       def primer(cache_key, &block)
         result = Primer.cache.compute(cache_key) do
-          primer_capture_output(&block)
+          block_given? ?
+              primer_capture_output(&block) :
+              Primer.cache.routes.evaluate(cache_key)
         end
+        
+        return result unless block_given?
         primer_detect_buffer.concat(result)
         nil
       end

@@ -14,20 +14,24 @@ shared_examples_for "erb helper" do
   
   before do
     Primer.cache = Primer::Cache::Memory.new
+    Primer.cache.routes = Primer::RouteSet.new do
+      get('/user') { "Master" }
+    end
   end
   
   describe "#primer" do
     describe "with an empty cache" do
       it "renders the contents of the block" do
-        output.should == "Welcome\nHello, Aaron\nThanks\n"
+        output.should == "Welcome, Master\nHello, Aaron\nThanks\n"
       end
       
       it "uses the model to get data" do
         context.should_receive(:name).and_return("Abe")
-        output.should == "Welcome\nHello, Abe\nThanks\n"
+        output.should == "Welcome, Master\nHello, Abe\nThanks\n"
       end
       
       it "writes the block result to the cache" do
+        Primer.cache.should_receive(:put).with("/user", "Master")
         Primer.cache.should_receive(:put).with("/cache/key", "Hello, Aaron")
         output
       end
@@ -42,7 +46,7 @@ shared_examples_for "erb helper" do
       end
       
       it "renders the cached value into the template" do
-        output.should == "Welcome\nText from the cache\nThanks\n"
+        output.should == "Welcome, Master\nText from the cache\nThanks\n"
       end
     end
   end

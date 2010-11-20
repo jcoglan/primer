@@ -4,7 +4,7 @@ module Primer
     autoload :Memory, ROOT + '/primer/cache/memory'
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
-    attr_writer :routes
+    attr_accessor :routes
     
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
