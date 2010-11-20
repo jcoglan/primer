@@ -7,30 +7,28 @@ shared_examples_for "primer cache" do
     @impostor = Person.create(:name => "Aaron")
   end
   
-  def compute_value
-    cache.compute("/people/abe/name") { @person.name }
-  end
-  
-  describe "#compute" do
-    describe "using a block" do
-      it "returns the value of the block" do
-        compute_value.should == "Abe"
-      end
-      
-      it "calls the implementation to get the value" do
-        @person.should_receive(:name)
-        compute_value
-      end
-      
-      it "stores the result of the computation" do
-        cache.should_receive(:put).with("/people/abe/name", "Abe")
-        compute_value
-      end
-      
-      it "notes that the value is related to some ActiveRecord data" do
-        cache.should_receive(:relate).with("/people/abe/name", [["ActiveRecord", "Person", @person.id, "name"]])
-        compute_value
-      end
+  describe "#compute with a block" do
+    def compute_value
+      cache.compute("/people/abe/name") { @person.name }
+    end
+    
+    it "returns the value of the block" do
+      compute_value.should == "Abe"
+    end
+    
+    it "calls the implementation to get the value" do
+      @person.should_receive(:name)
+      compute_value
+    end
+    
+    it "stores the result of the computation" do
+      cache.should_receive(:put).with("/people/abe/name", "Abe")
+      compute_value
+    end
+    
+    it "notes that the value is related to some ActiveRecord data" do
+      cache.should_receive(:relate).with("/people/abe/name", [["ActiveRecord", "Person", @person.id, "name"]])
+      compute_value
     end
     
     describe "when the value is already known" do
@@ -60,39 +58,59 @@ shared_examples_for "primer cache" do
         @person.update_attribute(:age, 28)
       end
     end
+  end
+  
+  describe "#compute without a block" do
+    let(:compute_value) { cache.compute("/foo") }
     
-    describe "with no block" do
-      before do
-        cache.routes = Primer::RouteSet.new do
-          get('/foo')     { Person.first.name }
-          get('/bar/:id') { params[:id] }
-        end
+    before do
+      cache.routes = Primer::RouteSet.new do
+        get('/foo')     { Person.first.name }
+        get('/bar/:id') { params[:id] }
+      end
+    end
+    
+    it "uses the routes to find the right value" do
+      compute_value.should == "Abe"
+    end
+    
+    it "stores the result of the computation" do
+      cache.should_receive(:put).with("/foo", "Abe")
+      compute_value
+    end
+    
+    it "notes that the value is related to some ActiveRecord data" do
+      cache.should_receive(:relate).with("/foo", [["ActiveRecord", "Person", @person.id, "name"]])
+      compute_value
+    end
+    
+    it "handles routing patterns and params" do
+      cache.should_receive(:put).with("/bar/pattern_match", "pattern_match")
+      cache.should_receive(:relate).with("/bar/pattern_match", [])
+      cache.compute("/bar/pattern_match").should == "pattern_match"
+    end
+    
+    it "raise an error for paths that don't match anything" do
+      cache.should_not_receive(:put)
+      cache.should_not_receive(:relate)
+      lambda { cache.compute("/qux") }.should raise_error(Primer::RouteNotFound)
+    end
+    
+    describe "when the value is already known" do
+      before { compute_value }
+      
+      it "returns the value of the block" do
+        compute_value.should == "Abe"
       end
       
-      it "uses the routes to find the right value" do
-        cache.compute("/foo").should == "Abe"
+      it "does not call the implementation" do
+        @person.should_not_receive(:name)
+        compute_value
       end
       
-      it "stores the result of the computation" do
-        cache.should_receive(:put).with("/foo", "Abe")
-        cache.compute("/foo")
-      end
-      
-      it "notes that the value is related to some ActiveRecord data" do
-        cache.should_receive(:relate).with("/foo", [["ActiveRecord", "Person", @person.id, "name"]])
-        cache.compute("/foo")
-      end
-      
-      it "handles routing patterns and params" do
-        cache.should_receive(:put).with("/bar/pattern_match", "pattern_match")
-        cache.should_receive(:relate).with("/bar/pattern_match", [])
-        cache.compute("/bar/pattern_match").should == "pattern_match"
-      end
-      
-      it "raise an error for paths that don't match anything" do
-        cache.should_not_receive(:put)
-        cache.should_not_receive(:relate)
-        lambda { cache.compute("/qux") }.should raise_error(Primer::RouteNotFound)
+      it "regenerates the cache when related data changes" do
+        @person.update_attribute(:name, "Aaron")
+        cache.get("/foo").should == "Aaron"
       end
     end
   end
@@ -115,7 +133,7 @@ shared_examples_for "primer cache" do
     end
     
     describe "when a cache value has been generated from a computation" do
-      before { compute_value }
+      before { cache.compute("/people/abe/name") { @person.name } }
       
       it "removes existing relations between the model and the cache" do
         cache.invalidate("/people/abe/name")

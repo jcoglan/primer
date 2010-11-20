@@ -31,6 +31,10 @@ module Primer
       result
     end
     
+    def regenerate(keys)
+      keys.each { |cache_key| compute(cache_key) rescue nil }
+    end
+    
   end
 end
 

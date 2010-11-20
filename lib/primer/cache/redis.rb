@@ -44,7 +44,9 @@ module Primer
       def changed(attribute)
         serial = attribute.join('/')
         return unless has_key?(serial)
-        @redis.smembers(serial).each { |key| invalidate(key) }
+        keys = @redis.smembers(serial)
+        keys.each { |key| invalidate(key) }
+        regenerate(keys)
       end
     end
     

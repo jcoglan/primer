@@ -46,7 +46,9 @@ module Primer
       
       def changed(attribute)
         return unless keys = @relations[attribute]
+        keys = keys.to_a
         keys.each { |key| invalidate(key) }
+        regenerate(keys)
       end
     end
     
