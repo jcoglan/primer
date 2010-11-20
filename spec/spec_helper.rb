@@ -26,8 +26,11 @@ RSpec.configure do |config|
   end
   
   config.after do
+    if Primer.cache
+      Primer.cache.clear
+      Primer.cache.routes = nil
+    end
     Primer::Watcher.reset!
-    Primer.cache.clear if Primer.cache
     Person.delete_all
   end
 end

@@ -89,10 +89,10 @@ shared_examples_for "primer cache" do
         cache.compute("/bar/pattern_match").should == "pattern_match"
       end
       
-      it "returns nil for paths that don't match anything" do
+      it "raise an error for paths that don't match anything" do
         cache.should_not_receive(:put)
         cache.should_not_receive(:relate)
-        cache.compute("/qux").should be_nil
+        lambda { cache.compute("/qux") }.should raise_error(Primer::RouteNotFound)
       end
     end
   end

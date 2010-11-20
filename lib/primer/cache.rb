@@ -9,6 +9,11 @@ module Primer
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
       
+      unless block_given? or @routes
+        message = "Cannot call Cache#compute(#{cache_key}) with no block: no routes have been configured"
+        raise RouteNotFound.new(message)
+      end
+      
       calls = []
       result = Watcher.watching(calls) do
         block_given? ? yield : @routes.evaluate(cache_key)

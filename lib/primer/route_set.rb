@@ -46,7 +46,7 @@ module Primer
             throw(:halt, instance_eval(&block))
           end
         end
-        nil
+        raise RouteNotFound.new("No route match found for key #{@request.path_info}")
       }
     end
   end
