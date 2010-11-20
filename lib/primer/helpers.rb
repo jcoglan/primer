@@ -13,7 +13,7 @@ module Primer
     private
       
       def primer_capture_output(&block)
-        return primer_capture_output_from_rails3(&block) if primer_rails3?
+        return primer_capture_output_from_rails(&block) if primer_rails?
         return primer_capture_output_from_sinatra(&block) if primer_sinatra?
       end
       
@@ -21,11 +21,13 @@ module Primer
         [@output_buffer, @_out_buf].compact.first
       end
       
-      def primer_rails3?
-        defined?(ActionView::OutputBuffer) and respond_to?(:capture)
+      def primer_rails?
+        return false unless respond_to?(:capture)
+        return true if defined?(ActionView::OutputBuffer)
+        String === @output_buffer
       end
       
-      def primer_capture_output_from_rails3(&block)
+      def primer_capture_output_from_rails(&block)
         capture(&block)
       end
       
