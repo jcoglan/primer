@@ -20,10 +20,13 @@ require 'primer/cache_spec'
 RSpec.configure do |config|
   config.before do
     Primer::Watcher.disable!
+    Primer.cache = nil
   end
   
   config.after do
     Primer::Watcher.reset!
+    Primer.cache.clear if Primer.cache
+    Person.delete_all
   end
 end
 

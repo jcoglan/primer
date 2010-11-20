@@ -10,10 +10,6 @@ shared_examples_for "primer cache" do
     @impostor = Person.create(:name => "Aaron")
   end
   
-  after do
-    Person.destroy_all
-  end
-  
   def compute_value
     cache.compute("/people/abe/name") { @person.name }
   end
@@ -92,6 +88,15 @@ shared_examples_for "primer cache" do
         cache.should_not_receive(:invalidate)
         @person.update_attribute(:name, "Weeble")
       end
+    end
+  end
+  
+  describe "#clear" do
+    before { cache.put("/some/key", "value") }
+    
+    it "empties the cache" do
+      cache.clear
+      cache.get("/some/key").should be_nil
     end
   end
 end

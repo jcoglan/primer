@@ -5,6 +5,10 @@ module Primer
     
     class Memory < Cache
       def initialize
+        clear
+      end
+      
+      def clear
         @data_store   = {}
         @relations    = {}
         @dependencies = {}
