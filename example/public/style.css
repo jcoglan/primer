@@ -1,0 +1,60 @@
+body {
+  background: #fff;
+  color: #444;
+  font: 15px/1.4 FreeSans, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.sub {
+  width: 800px;
+  margin: 0 auto;
+}
+
+.header {
+  border-bottom: 1px solid #444;
+  color: #1f5689;
+}
+
+.header h1 {
+  margin: 0.5em 0 0;
+  font-size: 3em;
+}
+
+.header h2 {
+  font-size: 1.5em;
+  margin: 0 0 0.8em;
+}
+
+.footer {
+  border-top: 1px solid #444;
+  font-size: 0.8em;
+  padding: 1em;
+}
+
+.content h3 {
+  color: #666;
+  font-weight: normal;
+  font-size: 4em;
+  letter-spacing: -0.06em;
+  margin: 0.2em 0 0;
+}
+
+.content h4 {
+  background: #e2fac2;
+  padding: 4px 16px;
+  font-weight: normal;
+  font-size: 1em;
+  margin: 0 0 1em;
+}
+
+p, ul, li {
+  margin: 1.4em 0;
+}
+
+a {
+  color: #7bbe1e;
+  font-weight: bold;
+  text-decoration: none;
+}
+

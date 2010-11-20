@@ -16,11 +16,14 @@ class Application < Sinatra::Base
   
   # Set up cache generators
   Primer.cache.routes = Primer::RouteSet.new do
-    get('/posts/:id/author') { BlogPost.find(params[:id]).author }
+    get('/posts/:id/title') { BlogPost.find(params[:id]).title.upcase }
   end
   
   # Configure Sinatra
-  set :views, ROOT + '/views'
+  set :reload_templates, true
+  set :static, true
+  set :public, ROOT + '/public'
+  set :views,  ROOT + '/views'
   helpers { include Primer::Helpers::ERB }
   
   get '/' do
