@@ -15,10 +15,12 @@ module Primer
       end
       
       def put(cache_key, value)
+        validate_key(cache_key)
         @data_store[cache_key] = value
       end
       
       def get(cache_key)
+        validate_key(cache_key)
         @data_store[cache_key]
       end
       

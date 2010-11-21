@@ -13,11 +13,13 @@ module Primer
       end
       
       def put(cache_key, value)
+        validate_key(cache_key)
         @redis.set(cache_key, value)
         RealTime.publish(cache_key, value)
       end
       
       def get(cache_key)
+        validate_key(cache_key)
         @redis.get(cache_key)
       end
       

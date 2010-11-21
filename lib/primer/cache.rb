@@ -37,8 +37,18 @@ module Primer
       result
     end
     
+  private
+    
     def regenerate(keys)
       keys.each { |cache_key| compute(cache_key) rescue nil }
+    end
+    
+    def validate_key(cache_key)
+      raise InvalidKey.new(cache_key) unless Cache.valid_key?(cache_key)
+    end
+    
+    def self.valid_key?(cache_key)
+      Faye::Channel.valid?(cache_key)
     end
     
   end

@@ -122,6 +122,10 @@ shared_examples_for "primer cache" do
       cache.put("/key", "value")
       cache.get("/key").should == "value"
     end
+    
+    it "raises an error if any invalid key is used" do
+      lambda { cache.put("invalid", "hmm") }.should raise_error(Primer::InvalidKey)
+    end
   end
   
   describe "#invalidate" do

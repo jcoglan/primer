@@ -1,5 +1,3 @@
-require 'faye'
-
 module Primer
   class RealTime < Faye::RackAdapter
     
