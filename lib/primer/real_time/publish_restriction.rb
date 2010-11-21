@@ -11,6 +11,7 @@ module Primer
           message['error'] = Faye::Error.ext_mismatch
         end
         
+        message['ext'].delete('password') if password
         callback.call(message)
       end
     end
