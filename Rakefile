@@ -38,6 +38,7 @@ spec = Gem::Specification.new do |s|
   # relevant versions
   s.add_dependency("redis", "~> 2.1.1")
   s.add_dependency("sinatra", "~> 1.1.0")
+  s.add_dependency("amqp", "~> 0.6.7")
   s.add_dependency("faye", ">= 0.5")
 
   # If your tests use any gems, include them here
