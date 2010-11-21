@@ -31,7 +31,7 @@ parts don't use blocks - we set these keys up in <tt>environment.rb</tt>.
 === application.rb
 
 The <tt>application.rb</tt> file is a simple Sinatra app - it loads the
-model from <tt>environment.rn</tt> and just sets up a couple of pages.
+model from <tt>environment.rb</tt> and just sets up a couple of pages.
 
 
 === environment.rb
