@@ -4,7 +4,7 @@ module Primer
   class RouteSet
     def initialize(&routes)
       @app = Class.new(Router)
-      instance_eval(&routes)
+      instance_eval(&routes) if block_given?
     end
     
     def get(path, &block)

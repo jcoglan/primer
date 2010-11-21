@@ -6,6 +6,11 @@ module Primer
     
     attr_accessor :routes
     
+    def routes(&block)
+      @routes ||= RouteSet.new
+      @routes.instance_eval(&block)
+    end
+    
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
       

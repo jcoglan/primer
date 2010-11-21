@@ -15,7 +15,7 @@ class Application < Sinatra::Base
   require ROOT + '/models/blog_post'
   
   # Set up cache generators
-  Primer.cache.routes = Primer::RouteSet.new do
+  Primer.cache.routes do
     get('/posts/:id/title') { BlogPost.find(params[:id]).title.upcase }
   end
   

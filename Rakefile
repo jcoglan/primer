@@ -28,7 +28,7 @@ spec = Gem::Specification.new do |s|
   # You should probably have a README of some kind. Change the filename
   # as appropriate
    s.extra_rdoc_files  = %w(README.rdoc)
-   s.rdoc_options      = %w(--main README.rdoc)
+   s.rdoc_options      = %w(--main README.rdoc --title Primer)
 
   # Add any extra files to include in the gem (like your README)
   s.files             = %w(README.rdoc) + Dir.glob("{spec,lib,example}/**/*")

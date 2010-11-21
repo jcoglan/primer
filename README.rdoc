@@ -1,7 +1,7 @@
 = Primer
 
-This is an experiment to bring automatic cache expiry and possibly regeneration
-to Rails. At Songkick[http://www.songkick.com], we have a ton of code that deals
+This is an experiment to bring automatic cache expiry and regeneration to
+Rails. At Songkick[http://www.songkick.com], we have a ton of code that deals
 with caches and denormalization and it's hard to maintain. I want to get rid of
 it. All of it.
 
@@ -11,18 +11,25 @@ it. All of it.
 Inspired by LunaScript[http://asana.com/luna] and Fun[http://marcuswest.in/read/fun-intro/],
 I figured Ruby could figure out which values a computation uses, and use that to
 expire caches for you without having to write any expiry code. This turns out to be
-possible, at least for mainstream ActiveRecord usage, and Primer includes an engine
+possible, at least for typical ActiveRecord usage, and Primer includes an engine
 for that.
 
-What's not clear at this stage is whether we can automatically pre-generate data to
-warm up caches. This is probably impossible to completely automate, but at least we
-can separate the code for how to compute something from the code that deals with
-knowing when a cache value should change.
+Primer currently lets you do the following:
+
+* Mark up ERB templates with cache keys on Rails and Sinatra
+* Monitor what attributes a cache value depends on
+* Automatically expire a cache when its dependencies change
+* Declare how caches should be recalculated for eager cache population
+* Update pages in real time when their data is updated
+
+It does all this without you having to write a single cache sweeper. You
+just declare how to render your site, Primer does the rest.
 
 
 == Enough waffle, show me the code!
 
-Get your ActiveRecord model, put a mixin in it:
+The following is the minimal, 'hello world' use case. Get your ActiveRecord
+model, put a mixin in it:
 
   class BlogPost < ActiveRecord::Base
     include Primer::Watcher
@@ -44,15 +51,76 @@ Throw a helper in your views:
 
 Wrap cache blocks around your markup for expensive bits:
 
-  <% primer "/posts/1/title" do %>
+  # views/posts/show.html.erb
+  
+  <% primer "/posts/#{@post.id}/title" do %>
     <%= @post.title.upcase %>
   <% end %>
 
-The block gets cached. The cache is expired when the post's title changes. You
-don't need to write any code for this.
+The output of the block gets cached to Redis using the given key. Once the
+output is cached, the block will not be called again. The cache is invalidated
+when (and only when) the title of <tt>@post</tt> changes; Primer figures this
+out and you don't need to write any cache sweeping code.
+
+
+=== Declaring cache generators
+
+You may have noticed that Primer forces the use of path-style keys for your
+cache. Instead of wrapping code you want to memoize in a block, you can
+declare how to calculate it elsewhere and use a router to map cache keys
+to calculations. For example we could rewrite our post title example like
+this:
+
+  # views/posts/show.html.erb
+  # note '=' sign here, not used with block form
+  
+  <%= primer "/posts/#{@post.id}/title" %>
+
+Then you can declare how to calculate this in a router attached to your
+cache object:
+
+  Primer.cache.routes do
+    get "/posts/:id/title" do
+      post = BlogPost.find(params[:id])
+      post.title.upcase
+    end
+  end
+
+The advantage of this is that the cache now has a way to generate cache values
+outside of your rendering stack, meaning that instead of just invalidating the
+cache it can actually calculate the new value so the cache is always ready
+for incoming requests.
+
+It also means you can generate cache content offline; running the following
+will generate the cache of the first post's title:
+
+  Primer.cache.compute("/posts/1/title")
+
+
+=== Real-time page updates
+
+If you want to be properly web-scale, you'll need to be updating your pages
+in real time as your data changes. Primer lets you update any fragment generated
+by a block-less <tt>primer</tt> call in your view automatically.
+
+All you need to do is place some middleware in your Rack config:
+
+  # config.ru
+  
+  require 'path/to/sinatra/app'
+  
+  use Primer::RealTime
+  run Sinatra::Application
+
+Then configure it wherever your data model gets used to tell it you want to
+use real-time updates and where the messaging server is:
+
+  Primer.real_time = true
+  Primer::RealTime.bayeux_server = 'http://localhost:9292'
 
 
 == Copyright
 
-Copyright (c) 2010 Songkick.com. Named by the inimitable grillpanda[http://github.com/grillpanda]
+Copyright (c) 2010 Songkick.com. Named by the inimitable
+grillpanda[http://github.com/grillpanda].
 
