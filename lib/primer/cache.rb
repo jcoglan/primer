@@ -49,6 +49,15 @@ module Primer
       result
     end
     
+    def changed(attribute)
+      keys_for_attribute(attribute).each do |cache_key|
+        timeout(cache_key) do
+          invalidate(cache_key)
+          regenerate(cache_key)
+        end
+      end
+    end
+    
   private
     
     def bind_to_bus

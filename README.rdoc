@@ -97,6 +97,41 @@ will generate the cache of the first post's title:
   Primer.cache.compute("/posts/1/title")
 
 
+=== Throttling
+
+Let's say you have a cache value that depends on many little bits of model
+data, a common situation in web front-ends. For example:
+
+  Primer.cache.routes do
+    get "/posts/:id/summary" do
+      post = BlogPost.find(params[:id])
+      <<-HTML
+        <div class="post-summary">
+          <h2>#{ post.title }</h2>
+          <ul class="post-meta">
+            <li>Posted #{ post.strftime('%A %e %B %Y') } by #{ post.author.name }</li>
+            <li>Tagged with #{ post.tags.map { |t| link_to(t.name, t) }.join(', ') }</li>
+          </ul>
+        </div>
+      HTML
+    end
+  end
+
+We've got a few domain objects in use here: the post itself, its author, the
+tags attached to the post. We'd want this value regenerating whenever any of
+this data changes, but what if many values that affect this template change at
+around the same time? We might not want to regenerate it for every single change,
+we just want to make sure it looks okay after all the changes have been applied.
+Primer lets you throttle cache regeneration, for example this makes sure each
+key is never regenerated twice within a 5-second interval:
+
+  Primer.cache.throttle = 5
+
+When a value affecting a key changes, Primer will wait 5 seconds before
+regenerating it, allowing other data changes to accrue before we update the
+cache.
+
+
 === Real-time page updates
 
 If you want to be properly web-scale, you'll need to be updating your pages

@@ -174,7 +174,7 @@ shared_examples_for "primer cache" do
       cache.routes = Primer::RouteSet.new do
         get("/data") { [BlogPost.first.title, Person.first.name] }
       end
-      cache.throttle = 0.2
+      cache.throttle = 0.5
       cache.compute("/data")
     end
     
@@ -182,7 +182,7 @@ shared_examples_for "primer cache" do
       cache.should_receive(:regenerate).once
       @post.update_attribute(:title, "The new title")
       @person.update_attribute(:name, "The new name")
-      sleep 0.5
+      sleep 1.0
     end
     
     it "regenerates after the given throttle time, not after the first trigger" do
@@ -192,7 +192,7 @@ shared_examples_for "primer cache" do
       @person.update_attribute(:name, "The new name")
       cache.get("/data").should == ["roflmillions", "Abe"]
       
-      sleep 0.5
+      sleep 1.0
       cache.get("/data").should == ["The new title", "The new name"]
     end
   end

@@ -51,15 +51,9 @@ module Primer
         end
       end
       
-      def changed(attribute)
+      def keys_for_attribute(attribute)
         serial = attribute.join('/')
-        return unless has_key?(serial)
-        @redis.smembers(serial).each do |cache_key|
-          timeout(cache_key) do
-            invalidate(cache_key)
-            regenerate(cache_key)
-          end
-        end
+        has_key?(serial) ? @redis.smembers(serial) : []
       end
       
       def timeout(cache_key, &block)
