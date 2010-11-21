@@ -117,10 +117,13 @@ Add the client-side script to your templates (this must be in the <tt>HEAD</tt>)
   <script type="text/javascript" src="/primer.js"></script>
 
 Then configure it wherever your data model gets used to tell it you want to
-use real-time updates and where the messaging server is:
+use real-time updates and where the messaging server is. You should also set
+a password - this will stop third parties being able to publish to the message
+bus and inject arbitrary HTML into your pages.
 
   Primer.real_time = true
   Primer::RealTime.bayeux_server = 'http://localhost:9292'
+  Primer::RealTime.password = 'super_secret_password'
 
 
 == Copyright
