@@ -9,7 +9,6 @@ module Primer
       def initialize(config = {})
         config = REDIS_CONFIG.merge(config)
         @redis = ::Redis.new(config)
-        bind_to_bus
       end
       
       def clear

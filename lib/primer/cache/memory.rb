@@ -4,7 +4,6 @@ module Primer
     class Memory < Cache
       def initialize
         clear
-        bind_to_bus
       end
       
       def clear

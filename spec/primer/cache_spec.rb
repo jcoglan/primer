@@ -3,6 +3,8 @@ require 'spec_helper'
 shared_examples_for "primer cache" do
   before do
     Primer.cache = cache
+    cache.bind_to_bus
+    
     @person   = Person.create(:name => "Abe")
     @impostor = Person.create(:name => "Aaron")
     @post     = BlogPost.create(:person => @impostor, :title => "roflmillions")

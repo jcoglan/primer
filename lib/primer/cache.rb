@@ -24,6 +24,12 @@ module Primer
       @routes
     end
     
+    def bind_to_bus
+      Primer.bus.subscribe do |message|
+        changed(message)
+      end
+    end
+    
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
       
@@ -59,12 +65,6 @@ module Primer
     end
     
   private
-    
-    def bind_to_bus
-      Primer.bus.subscribe do |message|
-        changed(message)
-      end
-    end
     
     def publish_change(cache_key)
       Primer.bus.publish(primer_identifier + ['get', cache_key])
