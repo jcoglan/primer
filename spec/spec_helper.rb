@@ -38,7 +38,7 @@ RSpec.configure do |config|
       Primer.cache.routes = nil
     end
     Primer::Watcher.reset!
-    Person.delete_all
+    [BlogPost, Person].each { |m| m.delete_all }
   end
 end
 

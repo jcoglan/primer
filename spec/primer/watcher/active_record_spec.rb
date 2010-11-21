@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Primer::Watcher::ActiveRecordMacros do
   before do
     @person = Person.create(:name => "Abe")
+    @post = BlogPost.create(:person => @person, :title => "web scale")
     @id = @person.id
     Primer::Watcher.enable!
   end
@@ -27,8 +28,13 @@ describe Primer::Watcher::ActiveRecordMacros do
   end
   
   it "watches calls to has_many associations" do
-    @person.blog_posts.count.should == 0
-    Primer::Watcher.call_log.should include([@person, :blog_posts, [], nil, []])
+    @person.blog_posts.count.should == 1
+    Primer::Watcher.call_log.should include([@person, :blog_posts, [], nil, [@post]])
+  end
+  
+  it "watches calls to belongs_to associations" do
+    @post.person.should == @person
+    Primer::Watcher.call_log.should include([@post, :person, [], nil, @person])
   end
   
   it "logs calls made inside other methods" do

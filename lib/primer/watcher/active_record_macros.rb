@@ -41,21 +41,35 @@ module Primer
         end
         
         def notify_primer_after_create
+          return unless Primer.cache
           self.class.reflect_on_all_associations.each do |assoc|
             next unless assoc.macro == :belongs_to
+            
             owner = __send__(assoc.name)
             next unless owner
+            
             mirror = owner.class.reflect_on_all_associations.find do |mirror_assoc|
               mirror_assoc.macro == :has_many and
               mirror_assoc.class_name == self.class.name
             end
             next unless mirror
+            
             Primer.cache.changed(owner.primer_identifier + [mirror.name.to_s])
           end
         end
         
         def notify_primer_after_update
+          return unless Primer.cache
+          
+          foreign_keys = self.class.
+              reflect_on_all_associations.
+              select { |a| a.macro == :belongs_to }.
+              map { |a| [a.primary_key_name.to_s, a.name] }
+          
+          foreign_keys = Hash[foreign_keys]
+          
           changes.each do |attribute, (old_value, new_value)|
+            attribute = foreign_keys[attribute.to_s] || attribute
             Primer.cache.changed(primer_identifier + [attribute.to_s])
           end
         end

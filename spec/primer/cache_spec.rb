@@ -5,6 +5,7 @@ shared_examples_for "primer cache" do
     Primer.cache = cache
     @person   = Person.create(:name => "Abe")
     @impostor = Person.create(:name => "Aaron")
+    @post     = BlogPost.create(:person => @impostor, :title => "roflmillions")
   end
   
   describe "#compute with a block" do
@@ -61,14 +62,16 @@ shared_examples_for "primer cache" do
   end
   
   describe "#compute without a block" do
-    let(:compute_value) { cache.compute("/foo") }
-    let(:compute_count) { cache.compute("/count") }
+    let(:compute_value)  { cache.compute("/foo") }
+    let(:compute_count)  { cache.compute("/count") }
+    let(:compute_author) { cache.compute("/author") }
     
     before do
       cache.routes = Primer::RouteSet.new do
         get('/foo')     { Person.first.name }
         get('/bar/:id') { params[:id] }
         get('/count')   { Person.first.blog_posts.count }
+        get('/author')  { BlogPost.first.person.name }
       end
     end
     
@@ -102,6 +105,7 @@ shared_examples_for "primer cache" do
       before do
         compute_value
         compute_count
+        compute_author
       end
       
       it "returns the value of the block" do
@@ -121,6 +125,16 @@ shared_examples_for "primer cache" do
       it "regenerates the cache when an associated collection changes" do
         BlogPost.create(:person => @person, :title => "ROFLscale")
         cache.get("/count").to_i.should == 1
+      end
+      
+      it "regenerates the cache when an association is changed" do
+        @post.update_attribute(:person, @person)
+        cache.get("/author").should == "Abe"
+      end
+      
+      it "regenerates the cache when an associated object changes" do
+        @impostor.update_attribute(:name, "Steve")
+        cache.get("/author").should == "Steve"
       end
     end
   end
