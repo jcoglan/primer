@@ -16,6 +16,7 @@ module Primer
       def put(cache_key, value)
         validate_key(cache_key)
         @redis.set(cache_key, YAML.dump(value))
+        publish_change(cache_key)
         RealTime.publish(cache_key, value)
       end
       

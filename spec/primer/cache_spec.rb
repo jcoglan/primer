@@ -139,6 +139,44 @@ shared_examples_for "primer cache" do
     end
   end
   
+  describe "nested cache values" do
+    before do
+      cache.routes = Primer::RouteSet.new do
+        get('/title')   { BlogPost.first.title }
+        get('/content') { BlogPost.first.person.name + Primer.cache.compute('/title') }
+      end
+    end
+    
+    it "returns the correct value for the outer computation" do
+      cache.compute("/content").should == "Aaronroflmillions"
+    end
+    
+    describe "when the inner cache value is known before computing the outer value" do
+      before do
+        cache.compute("/title")
+        cache.compute("/content")
+      end
+      
+      it "returns the correct value for the outer computation" do
+        cache.compute("/content").should == "Aaronroflmillions"
+      end
+      
+      it "updates the cache when the title changes" do
+        @post.update_attribute(:title, "It's toasted")
+        cache.compute("/title").should == "It's toasted"
+        cache.compute("/content").should == "AaronIt's toasted"
+      end
+    end
+  end
+  
+  describe "#get" do
+    it "can be caught by the Watcher" do
+      calls = []
+      Primer::Watcher.watching(calls) { cache.get("/a/key") }
+      calls.should == [[cache, :get, ["/a/key"], nil, nil]]
+    end
+  end
+  
   describe "#put" do
     before { cache.get("/key").should be_nil }
     

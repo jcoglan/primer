@@ -7,8 +7,11 @@ module Primer
     
     def self.included(klass)
       klass.extend(Macros)
-      @classes ||= []
-      @classes << klass
+    end
+    
+    def self.register(klass)
+      @classes ||= Set.new
+      @classes.add(klass)
     end
     
     def self.reset!

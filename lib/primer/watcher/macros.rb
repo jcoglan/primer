@@ -15,6 +15,7 @@ module Primer
       end
       
       def watch_calls_to(*methods)
+        Watcher.register(self)
         @primer_watched_calls ||= []
         @primer_watched_calls += methods
       end

@@ -4,6 +4,20 @@ module Primer
     autoload :Memory, ROOT + '/primer/cache/memory'
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
+    include Watcher
+    
+    def self.inherited(klass)
+      klass.watch_calls_to :get
+    end
+    
+    def primer_identifier
+      [Cache.name]
+    end
+    
+    def publish_change(cache_key)
+      Primer.bus.publish(primer_identifier + ['get', cache_key])
+    end
+    
     attr_writer :routes
     
     def routes(&block)
@@ -32,7 +46,7 @@ module Primer
       end
       
       attributes = calls.map do |(receiver, method_name, args, block, return_value)|
-        receiver.primer_identifier + [method_name.to_s]
+        receiver.primer_identifier + [method_name.to_s] + args
       end
       
       unless result.nil?
