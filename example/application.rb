@@ -1,18 +1,16 @@
 require 'rubygems'
 require 'sinatra'
-require 'active_record'
 
 class Application < Sinatra::Base
   ROOT = File.expand_path(File.dirname(__FILE__))
   
-  require ROOT + '/config/primer'
-  require ROOT + '/models/connection'
-  require ROOT + '/models/blog_post'
+  require ROOT + '/environment'
   
   set :reload_templates, true
   set :static, true
   set :public, ROOT + '/public'
   set :views,  ROOT + '/views'
+  
   helpers { include Primer::Helpers::ERB }
   
   get '/' do
