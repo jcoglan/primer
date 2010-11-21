@@ -10,6 +10,7 @@ class Application < Sinatra::Base
   
   Primer.real_time = true
   Primer::RealTime.bayeux_server = 'http://0.0.0.0:9292'
+  Primer::RealTime.password = 'omg_rofl_scale'
   
   require ROOT + '/models/connection'
   require ROOT + '/models/blog_post'
