@@ -6,12 +6,36 @@ module Primer
     TYPE_SCRIPT   = {'Content-Type' => 'text/javascript'}
     SCRIPT_SOURCE = File.read(ROOT + '/javascript/primer.js')
     
-    autoload :PublishRestriction,   ROOT + '/primer/real_time/publish_restriction'
-    autoload :ClientAuthentication, ROOT + '/primer/real_time/client_authentication'
+    class ServerAuth
+      def incoming(message, callback)
+        channel = message['channel']
+        return callback.call(message) if Faye::Channel.meta?(channel)
+        
+        password = message['ext'] && message['ext']['password']
+        unless password == RealTime.password
+          message['error'] = Faye::Error.ext_mismatch
+        end
+        
+        message['ext'].delete('password') if password
+        callback.call(message)
+      end
+    end
+    
+    class ClientAuth
+      def outgoing(message, callback)
+        channel = message['channel']
+        return callback.call(message) if Faye::Channel.meta?(channel)
+        
+        message['ext'] ||= {}
+        message['ext']['password'] = RealTime.password
+        
+        callback.call(message)
+      end
+    end
     
     def initialize(app)
       super(app, BAYEUX_CONFIG)
-      add_extension(PublishRestriction.new)
+      add_extension(ServerAuth.new)
     end
     
     def call(env)
@@ -45,7 +69,7 @@ module Primer
         
         endpoint = "#{ bayeux_server }#{ BAYEUX_CONFIG[:mount] }"
         @client = Faye::Client.new(endpoint)
-        @client.add_extension(ClientAuthentication.new)
+        @client.add_extension(ClientAuth.new)
         
         @client
       end
