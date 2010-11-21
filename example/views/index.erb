@@ -2,7 +2,7 @@
 
 <ul>
   <% @posts.each do |post| %>
-    <li><a href="/posts/<%= post.id %>"><%= post.title.upcase %></a></li>
+    <li><a href="/posts/<%= post.id %>"><%= primer "/posts/#{post.id}/title" %></a></li>
   <% end %>
 </ul>
 
