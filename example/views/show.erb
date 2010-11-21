@@ -1,5 +1,5 @@
-<h3><%= primer "/posts/#{@post.id}/title", :span %></h3>
-<h4>By <%= @post.author %></h4>
+<h3><%= @post.title.upcase %></h3>
+<h4>By <%= @post.author %> &mdash; <%= primer "/posts/#{@post.id}/date", :span %></h4>
 
 <% primer "/posts/#{@post.id}/body" do %>
   <p><%= @post.body %></p>

@@ -17,7 +17,13 @@ class Application < Sinatra::Base
   
   # Set up cache generators
   Primer.cache.routes do
-    get('/posts/:id/title') { BlogPost.find(params[:id]).title.upcase }
+    get '/posts/:id/date' do
+      BlogPost.find(params[:id]).created_at.strftime('%A %e %B %Y')
+    end
+    
+    get '/posts/:id/title' do
+      BlogPost.find(params[:id]).title.upcase
+    end
   end
   
   # Configure Sinatra
