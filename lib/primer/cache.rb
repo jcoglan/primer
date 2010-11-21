@@ -14,22 +14,12 @@ module Primer
       [Cache.name]
     end
     
-    def publish_change(cache_key)
-      Primer.bus.publish(primer_identifier + ['get', cache_key])
-    end
-    
     attr_writer :routes
     
     def routes(&block)
       @routes ||= RouteSet.new
       @routes.instance_eval(&block) if block_given?
       @routes
-    end
-    
-    def bind_to_bus
-      Primer.bus.subscribe do |message|
-        changed(message)
-      end
     end
     
     def compute(cache_key)
@@ -58,6 +48,16 @@ module Primer
     end
     
   private
+    
+    def bind_to_bus
+      Primer.bus.subscribe do |message|
+        changed(message)
+      end
+    end
+    
+    def publish_change(cache_key)
+      Primer.bus.publish(primer_identifier + ['get', cache_key])
+    end
     
     def regenerate(keys)
       keys.each { |cache_key| compute(cache_key) rescue nil }

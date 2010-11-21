@@ -16,7 +16,7 @@ module Primer
       def put(cache_key, value)
         validate_key(cache_key)
         @data_store[cache_key] = value
-        Primer.bus.publish([Cache.name, 'get', cache_key])
+        publish_change(cache_key)
       end
       
       def get(cache_key)
