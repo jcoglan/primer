@@ -6,8 +6,12 @@ require 'tilt'
 require 'erb'
 require 'action_controller'
 
+require 'fileutils'
 require 'active_record'
-ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
+FileUtils.mkdir_p(dir + '/db')
+ActiveRecord::Base.establish_connection(
+  :adapter  => 'sqlite3',
+  :database => dir + '/db/test.sqlite3')
 
 ActiveRecord::Schema.define do |version|
   create_table :blog_posts, :force => true do |t|
