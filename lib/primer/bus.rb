@@ -1,7 +1,7 @@
 module Primer
   module Bus
     
-    autoload :Memory, 'primer/bus/memory'
+    autoload :Memory, ROOT + '/primer/bus/memory'
     
   end
 end
