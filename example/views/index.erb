@@ -2,7 +2,12 @@
 
 <ul>
   <% @posts.each do |post| %>
-    <li><a href="/posts/<%= post.id %>"><%= primer "/posts/#{post.id}/title", :span %></a></li>
+    <li>
+      <span class="date"><%= post.created_at.strftime '%d %b %Y' %></span>
+      <a href="/posts/<%= post.id %>">
+        <%= primer "/posts/#{post.id}/title", :span %>
+      </a>
+    </li>
   <% end %>
 </ul>
 

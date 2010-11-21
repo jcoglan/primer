@@ -1,60 +1,75 @@
 body {
-  background: #fff;
-  color: #444;
-  font: 15px/1.4 FreeSans, Helvetica, Arial, sans-serif;
-  margin: 0;
-  padding: 0;
+  font: 16px/1.4 FreeSans, Helvetica, Arial, sans-serif;
+  background: #353e4b;
 }
 
 .sub {
   width: 800px;
   margin: 0 auto;
+  padding: 1em 2em;
 }
 
 .header {
-  border-bottom: 1px solid #444;
-  color: #1f5689;
+  text-shadow: #23282e 0px -2px 0px;
 }
 
 .header h1 {
-  margin: 0.5em 0 0;
-  font-size: 3em;
+  color: #e5dec7;
+  font-size: 4em;
+  letter-spacing: -0.06em;
+  margin: 0;
 }
 
 .header h2 {
+  color: #b3a784;
   font-size: 1.5em;
-  margin: 0 0 0.8em;
-}
-
-.footer {
-  border-top: 1px solid #444;
-  font-size: 0.8em;
-  padding: 1em;
-}
-
-.content h3 {
-  color: #666;
   font-weight: normal;
-  font-size: 4em;
   letter-spacing: -0.06em;
-  margin: 0.2em 0 0;
+  margin: 0 0 0.5em;
 }
 
-.content h4 {
-  background: #e2fac2;
-  padding: 4px 16px;
+.content .sub {
+  background: #fff;
+  color: #333;
+  -webkit-border-radius: 16px;
+  -moz-border-radius: 16px;
+  border-radius: 16px;
+}
+
+ul {
+  font-size: 1.5em;
+  list-style: none;
+}
+
+ul .date {
+  font-size: 0.8em;
+  letter-spacing: -0.06em;
+  color: #888;
+}
+
+h3 {
+  color: #9ba749;
+  font-size: 3em;
+  letter-spacing: -0.06em;
+  margin: 0;
+}
+
+h4 {
+  color: #888;
+  font-size: 1.5em;
   font-weight: normal;
-  font-size: 1em;
   margin: 0 0 1em;
 }
 
-p, ul, li {
-  margin: 1.4em 0;
-}
-
 a {
-  color: #7bbe1e;
+  color: #9ba749;
   font-weight: bold;
   text-decoration: none;
+}
+
+.footer {
+  font-size: 0.8em;
+  color: #999;
+  text-shadow: #23282e 0px -1px 0px;
 }
 
