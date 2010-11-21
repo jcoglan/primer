@@ -1,5 +1,6 @@
 require 'faye'
 require 'set'
+require 'yaml'
 
 module Primer
   ROOT = File.expand_path(File.dirname(__FILE__))

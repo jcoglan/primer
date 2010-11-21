@@ -150,6 +150,12 @@ shared_examples_for "primer cache" do
     it "raises an error if any invalid key is used" do
       lambda { cache.put("invalid", "hmm") }.should raise_error(Primer::InvalidKey)
     end
+    
+    it "can store arbitrary data" do
+      value = ["foo", 4, [5, :bar], {:qux => [6, 7]}]
+      cache.put("/key", value)
+      cache.get("/key").should == value
+    end
   end
   
   describe "#invalidate" do

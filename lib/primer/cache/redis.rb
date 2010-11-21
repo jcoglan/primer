@@ -15,13 +15,14 @@ module Primer
       
       def put(cache_key, value)
         validate_key(cache_key)
-        @redis.set(cache_key, value)
+        @redis.set(cache_key, YAML.dump(value))
         RealTime.publish(cache_key, value)
       end
       
       def get(cache_key)
         validate_key(cache_key)
-        @redis.get(cache_key)
+        string = @redis.get(cache_key)
+        string ? YAML.load(string) : nil
       end
       
       def has_key?(cache_key)
