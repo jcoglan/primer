@@ -12,6 +12,12 @@ module Primer
       @routes
     end
     
+    def bind_to_bus
+      Primer.bus.subscribe do |message|
+        changed(message)
+      end
+    end
+    
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
       

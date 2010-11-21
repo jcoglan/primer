@@ -35,13 +35,22 @@ module Primer
         RUBY
       end
       
+      def primer_foreign_key_mappings
+        return @primer_foreign_key_mappings if defined?(@primer_foreign_key_mappings)
+        
+        foreign_keys = reflect_on_all_associations.
+                       select { |a| a.macro == :belongs_to }.
+                       map { |a| [a.primary_key_name.to_s, a.name] }
+        
+        @primer_foreign_key_mappings = Hash[foreign_keys]
+      end
+      
       module InstanceMethods
         def primer_identifier
           ['ActiveRecord', self.class.name, read_attribute(self.class.primary_key)]
         end
         
         def notify_primer_after_create
-          return unless Primer.cache
           self.class.reflect_on_all_associations.each do |assoc|
             next unless assoc.macro == :belongs_to
             
@@ -54,23 +63,18 @@ module Primer
             end
             next unless mirror
             
-            Primer.cache.changed(owner.primer_identifier + [mirror.name.to_s])
+            Primer.bus.publish(owner.primer_identifier + [mirror.name.to_s])
           end
         end
         
         def notify_primer_after_update
-          return unless Primer.cache
-          
-          foreign_keys = self.class.
-              reflect_on_all_associations.
-              select { |a| a.macro == :belongs_to }.
-              map { |a| [a.primary_key_name.to_s, a.name] }
-          
-          foreign_keys = Hash[foreign_keys]
+          foreign_keys = self.class.primer_foreign_key_mappings
           
           changes.each do |attribute, (old_value, new_value)|
-            attribute = foreign_keys[attribute.to_s] || attribute
-            Primer.cache.changed(primer_identifier + [attribute.to_s])
+            Primer.bus.publish(primer_identifier + [attribute.to_s])
+            if assoc = foreign_keys[attribute.to_s]
+              Primer.bus.publish(primer_identifier + [assoc.to_s])
+            end
           end
         end
       end

@@ -2,9 +2,11 @@ require 'spec_helper'
 
 describe Primer::Watcher::ActiveRecordMacros do
   before do
-    @person = Person.create(:name => "Abe")
-    @post = BlogPost.create(:person => @person, :title => "web scale")
-    @id = @person.id
+    @person   = Person.create(:name => "Abe")
+    @impostor = Person.create(:name => "Aaron")
+    @post     = BlogPost.create(:person => @person, :title => "web scale")
+    @id       = @person.id
+    
     Primer::Watcher.enable!
   end
   
@@ -43,6 +45,27 @@ describe Primer::Watcher::ActiveRecordMacros do
       [@person, :id,   [], nil, @id  ],
       [@person, :name, [], nil, "Abe"]
     ]
+  end
+  
+  it "publishes a message when an attribute changes" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "name"])
+    @person.update_attribute(:name, "Aaron")
+  end
+  
+  it "publishes a message when a has_many collection gains a member" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "blog_posts"])
+    BlogPost.create(:person => @person, :title => "How to make a time machine")
+  end
+  
+  it "publishes a message about a belongs_to association when the foreign key changes" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "blog_posts"])
+    BlogPost.create(:person => @person, :title => "How to make a time machine")
+  end
+  
+  it "publishes a message about a belongs_to association when the object changes" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "person_id"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "person"])
+    @post.update_attribute(:person, @impostor)
   end
 end
 

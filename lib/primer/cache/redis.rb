@@ -6,6 +6,7 @@ module Primer
     class Redis < Cache
       def initialize(config = {})
         @redis = ::Redis.new(config)
+        bind_to_bus
       end
       
       def clear

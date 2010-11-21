@@ -28,6 +28,7 @@ require 'models/person'
 RSpec.configure do |config|
   config.before do
     Primer::Watcher.disable!
+    Primer.bus = Primer::Bus::Memory.new
     Primer.cache = nil
     Primer.real_time = false
   end
@@ -38,6 +39,7 @@ RSpec.configure do |config|
       Primer.cache.routes = nil
     end
     Primer::Watcher.reset!
+    Primer.bus.unsubscribe_all
     [BlogPost, Person].each { |m| m.delete_all }
   end
 end
