@@ -21,9 +21,14 @@ describe Primer::Watcher::ActiveRecordMacros do
     Person.should be_kind_of(Primer::Watcher::ActiveRecordMacros)
   end
   
-  it "automatically watches ActiveRecord attributes" do
+  it "watches ActiveRecord attributes" do
     @person.name.should == "Abe"
     Primer::Watcher.call_log.should == [[@person, :name, [], nil, "Abe"]]
+  end
+  
+  it "watches calls to has_many associations" do
+    @person.blog_posts.count.should == 0
+    Primer::Watcher.call_log.should include([@person, :blog_posts, [], nil, []])
   end
   
   it "logs calls made inside other methods" do

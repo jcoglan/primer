@@ -62,11 +62,13 @@ shared_examples_for "primer cache" do
   
   describe "#compute without a block" do
     let(:compute_value) { cache.compute("/foo") }
+    let(:compute_count) { cache.compute("/count") }
     
     before do
       cache.routes = Primer::RouteSet.new do
         get('/foo')     { Person.first.name }
         get('/bar/:id') { params[:id] }
+        get('/count')   { Person.first.blog_posts.count }
       end
     end
     
@@ -97,7 +99,10 @@ shared_examples_for "primer cache" do
     end
     
     describe "when the value is already known" do
-      before { compute_value }
+      before do
+        compute_value
+        compute_count
+      end
       
       it "returns the value of the block" do
         compute_value.should == "Abe"
@@ -111,6 +116,11 @@ shared_examples_for "primer cache" do
       it "regenerates the cache when related data changes" do
         @person.update_attribute(:name, "Aaron")
         cache.get("/foo").should == "Aaron"
+      end
+      
+      it "regenerates the cache when an associated collection changes" do
+        BlogPost.create(:person => @person, :title => "ROFLscale")
+        cache.get("/count").to_i.should == 1
       end
     end
   end

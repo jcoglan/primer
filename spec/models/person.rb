@@ -1,4 +1,6 @@
 class Person < ActiveRecord::Base
+  has_many :blog_posts
+  
   include Primer::Watcher
   
   def all_attributes

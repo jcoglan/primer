@@ -10,6 +10,11 @@ require 'active_record'
 ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
 
 ActiveRecord::Schema.define do |version|
+  create_table :blog_posts, :force => true do |t|
+    t.belongs_to :person
+    t.string :title
+  end
+  
   create_table :people, :force => true do |t|
     t.string  :name
     t.integer :age
@@ -17,6 +22,7 @@ ActiveRecord::Schema.define do |version|
 end
 
 require 'models/watchable'
+require 'models/blog_post'
 require 'models/person'
 
 RSpec.configure do |config|
