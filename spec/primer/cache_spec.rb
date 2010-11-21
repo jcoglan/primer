@@ -62,13 +62,13 @@ shared_examples_for "primer cache" do
   end
   
   describe "#compute without a block" do
-    let(:compute_value)  { cache.compute("/foo") }
+    let(:compute_value)  { cache.compute("/name") }
     let(:compute_count)  { cache.compute("/count") }
     let(:compute_author) { cache.compute("/author") }
     
     before do
       cache.routes = Primer::RouteSet.new do
-        get('/foo')     { Person.first.name }
+        get('/name')     { Person.first.name }
         get('/bar/:id') { params[:id] }
         get('/count')   { Person.first.blog_posts.count }
         get('/author')  { BlogPost.first.person.name }
@@ -80,12 +80,12 @@ shared_examples_for "primer cache" do
     end
     
     it "stores the result of the computation" do
-      cache.should_receive(:put).with("/foo", "Abe")
+      cache.should_receive(:put).with("/name", "Abe")
       compute_value
     end
     
     it "notes that the value is related to some ActiveRecord data" do
-      cache.should_receive(:relate).with("/foo", [["ActiveRecord", "Person", @person.id, "name"]])
+      cache.should_receive(:relate).with("/name", [["ActiveRecord", "Person", @person.id, "name"]])
       compute_value
     end
     
@@ -119,7 +119,7 @@ shared_examples_for "primer cache" do
       
       it "regenerates the cache when related data changes" do
         @person.update_attribute(:name, "Aaron")
-        cache.get("/foo").should == "Aaron"
+        cache.get("/name").should == "Aaron"
       end
       
       it "regenerates the cache when an associated collection changes" do
@@ -163,8 +163,8 @@ shared_examples_for "primer cache" do
       
       it "updates the cache when the title changes" do
         @post.update_attribute(:title, "It's toasted")
-        cache.compute("/title").should == "It's toasted"
-        cache.compute("/content").should == "AaronIt's toasted"
+        cache.get("/title").should == "It's toasted"
+        cache.get("/content").should == "AaronIt's toasted"
       end
     end
   end
