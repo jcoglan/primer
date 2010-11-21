@@ -4,11 +4,12 @@ module Primer
     autoload :Memory, ROOT + '/primer/cache/memory'
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
-    attr_accessor :routes
+    attr_writer :routes
     
     def routes(&block)
       @routes ||= RouteSet.new
-      @routes.instance_eval(&block)
+      @routes.instance_eval(&block) if block_given?
+      @routes
     end
     
     def compute(cache_key)
