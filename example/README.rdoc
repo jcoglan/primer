@@ -1,0 +1,69 @@
+= Primer example app
+
+This is a simple app that demonstrates how you can use Primer. It's based on
+ActiveRecord for the model and Sinatra for the front-end. To start it up,
+install some gems, build the database then use Rack:
+
+  gem install redis amqp faye sinatra activerecord sqlite3-ruby
+  ruby script/setup_database.rb
+  rackup -s thin -E production config.ru
+
+
+=== models
+
+Let's take a look at the internals. In the +models+ directory, you'll see a
+simple BlogPost model:
+
+  class BlogPost < ActiveRecord::Base
+    include Primer::Watcher
+  end
+
+That's all we need for Primer to monitor how our data changes.
+
+
+=== public, views
+
+The +public+ and +views+ directories are used by the Sinatra app, and should
+be pretty self-explanatory. Note which bits of the views are cached, and which
+parts don't use blocks - we set these keys up in <tt>environment.rb</tt>.
+
+
+=== application.rb
+
+The <tt>application.rb</tt> file is a simple Sinatra app - it loads the
+model from <tt>environment.rn</tt> and just sets up a couple of pages.
+
+
+=== environment.rb
+
+The meat of the system is in <tt>environment.rb</tt>. This file loads the
+gems we need, loads our models, and configures Primer. See that file for more
+details, but note that it uses an AMQP bus and does not bind the cache to
+the bus: this is because we want individual processes to decide whether
+they perform cache expiry.
+
+
+=== worker.rb
+
+This file just loads <tt>environment.rb</tt>, then binds the Primer cache to
+the message bus. This picks up data change notifications from the rest of the
+system and makes the cache react to them. You can spin up any number of these
+workers to distribute the load: just run
+
+  ruby worker.rb
+
+If you don't run any of these, messages will build up in AMQP until you start
+a worker. Each data change message goes to only one worker process so you
+won't duplicate any work.
+
+
+=== console
+
+You can interact with the model by starting IRB with the app's environment:
+
+  irb -r ./environment.rb
+
+Go and create posts and change their data to see how the front-end reacts.
+To get the real-time updates to work you must have a worker running to
+update caches; this is not done by the web app process.
+

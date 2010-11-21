@@ -161,6 +161,11 @@ bus and inject arbitrary HTML into your pages.
   Primer::RealTime.password = 'super_secret_password'
 
 
+== Examples
+
+See <tt>example/README.rdoc</tt>.
+
+
 == Copyright
 
 Copyright (c) 2010 Songkick.com. Named by the inimitable
