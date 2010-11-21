@@ -169,6 +169,34 @@ shared_examples_for "primer cache" do
     end
   end
   
+  describe "throttling" do
+    before do
+      cache.routes = Primer::RouteSet.new do
+        get("/data") { [BlogPost.first.title, Person.first.name] }
+      end
+      cache.throttle = 0.2
+      cache.compute("/data")
+    end
+    
+    it "restricts how often the cache is recalculated" do
+      cache.should_receive(:regenerate).once
+      @post.update_attribute(:title, "The new title")
+      @person.update_attribute(:name, "The new name")
+      sleep 0.5
+    end
+    
+    it "regenerates after the given throttle time, not after the first trigger" do
+      @post.update_attribute(:title, "The new title")
+      cache.get("/data").should == ["roflmillions", "Abe"]
+      
+      @person.update_attribute(:name, "The new name")
+      cache.get("/data").should == ["roflmillions", "Abe"]
+      
+      sleep 0.5
+      cache.get("/data").should == ["The new title", "The new name"]
+    end
+  end
+  
   describe "#get" do
     it "can be caught by the Watcher" do
       calls = []

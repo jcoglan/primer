@@ -48,9 +48,17 @@ module Primer
       
       def changed(attribute)
         return unless keys = @relations[attribute]
-        keys = keys.to_a
-        keys.each { |key| invalidate(key) }
-        regenerate(keys)
+        keys.to_a.each do |cache_key|
+          timeout(cache_key) do
+            invalidate(cache_key)
+            regenerate(cache_key)
+          end
+        end
+      end
+      
+      def timeout(cache_key, &block)
+        return block.call unless @throttle
+        add_timeout(cache_key, @throttle, &block)
       end
     end
     

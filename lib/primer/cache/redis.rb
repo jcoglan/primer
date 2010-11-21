@@ -4,7 +4,10 @@ module Primer
   class Cache
     
     class Redis < Cache
+      REDIS_CONFIG = {:thread_safe => true}
+      
       def initialize(config = {})
+        config = REDIS_CONFIG.merge(config)
         @redis = ::Redis.new(config)
         bind_to_bus
       end
@@ -51,9 +54,22 @@ module Primer
       def changed(attribute)
         serial = attribute.join('/')
         return unless has_key?(serial)
-        keys = @redis.smembers(serial)
-        keys.each { |key| invalidate(key) }
-        regenerate(keys)
+        @redis.smembers(serial).each do |cache_key|
+          timeout(cache_key) do
+            invalidate(cache_key)
+            regenerate(cache_key)
+          end
+        end
+      end
+      
+      def timeout(cache_key, &block)
+        return block.call unless @throttle
+        return if has_key?('timeouts' + cache_key)
+        @redis.set('timeouts' + cache_key, 'true')
+        add_timeout(cache_key, @throttle) do
+          block.call
+          @redis.del('timeouts' + cache_key)
+        end
       end
     end
     

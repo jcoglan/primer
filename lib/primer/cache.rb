@@ -5,6 +5,10 @@ module Primer
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
     include Watcher
+    include Faye::Timeouts
+    
+    attr_accessor :throttle
+    attr_writer :routes
     
     def self.inherited(klass)
       klass.watch_calls_to :get
@@ -13,8 +17,6 @@ module Primer
     def primer_identifier
       [Cache.name]
     end
-    
-    attr_writer :routes
     
     def routes(&block)
       @routes ||= RouteSet.new
@@ -59,8 +61,8 @@ module Primer
       Primer.bus.publish(primer_identifier + ['get', cache_key])
     end
     
-    def regenerate(keys)
-      keys.each { |cache_key| compute(cache_key) rescue nil }
+    def regenerate(cache_key)
+      compute(cache_key) rescue nil
     end
     
     def validate_key(cache_key)
