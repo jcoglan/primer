@@ -2,6 +2,13 @@ module Primer
   module Watcher
     
     module ActiveRecordMacros
+      def self.mirror_association(object, related, macro)
+        related.class.reflect_on_all_associations.find do |mirror_assoc|
+          mirror_assoc.macro == macro and
+          mirror_assoc.class_name == object.class.name
+        end
+      end
+      
       def self.extended(klass)
         klass.watch_calls_to(*klass.attributes_watchable_by_primer)
         klass.__send__(:include, InstanceMethods)
@@ -51,23 +58,6 @@ module Primer
           ['ActiveRecord', self.class.name, read_attribute(self.class.primary_key)]
         end
         
-        def notify_primer_about_belongs_to_associations
-          self.class.reflect_on_all_associations.each do |assoc|
-            next unless assoc.macro == :belongs_to
-            
-            owner = __send__(assoc.name)
-            next unless owner
-            
-            mirror = owner.class.reflect_on_all_associations.find do |mirror_assoc|
-              mirror_assoc.macro == :has_many and
-              mirror_assoc.class_name == self.class.name
-            end
-            next unless mirror
-            
-            Primer.bus.publish(owner.primer_identifier + [mirror.name.to_s])
-          end
-        end
-        
         def notify_primer_about_attributes(fields)
           foreign_keys = self.class.primer_foreign_key_mappings
           
@@ -75,6 +65,33 @@ module Primer
             Primer.bus.publish(primer_identifier + [attribute.to_s])
             if assoc = foreign_keys[attribute.to_s]
               Primer.bus.publish(primer_identifier + [assoc.to_s])
+            end
+          end
+        end
+        
+        def notify_primer_about_belongs_to_associations
+          self.class.reflect_on_all_associations.each do |assoc|
+            next unless assoc.macro == :belongs_to
+            
+            owner = __send__(assoc.name)
+            next unless owner
+            
+            mirror = ActiveRecordMacros.mirror_association(self, owner, :has_many)
+            next unless mirror
+            
+            Primer.bus.publish(owner.primer_identifier + [mirror.name.to_s])
+          end
+        end
+        
+        def notify_primer_about_has_many_associations
+          self.class.reflect_on_all_associations.each do |assoc|
+            next unless assoc.macro == :has_many
+            
+            __send__(assoc.name).each do |object|
+              mirror = ActiveRecordMacros.mirror_association(self, object, :belongs_to)
+              next unless mirror
+              
+              Primer.bus.publish(object.primer_identifier + [mirror.name.to_s])
             end
           end
         end
@@ -90,6 +107,7 @@ module Primer
         def notify_primer_after_destroy
           notify_primer_about_attributes(attributes)
           notify_primer_about_belongs_to_associations
+          notify_primer_about_has_many_associations
         end
       end
     end

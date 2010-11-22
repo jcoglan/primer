@@ -4,7 +4,7 @@ describe Primer::Watcher::ActiveRecordMacros do
   before do
     @person   = Person.create(:name => "Abe")
     @impostor = Person.create(:name => "Aaron")
-    @post     = BlogPost.create(:person => @person, :title => "web scale")
+    @post     = @person.blog_posts.create(:title => "web scale")
     @id       = @person.id
     
     Primer::Watcher.enable!
@@ -56,6 +56,7 @@ describe Primer::Watcher::ActiveRecordMacros do
     Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "id"])
     Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "name"])
     Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "age"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "person"])
     @person.destroy
   end
   
