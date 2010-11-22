@@ -57,10 +57,11 @@ module Primer
     
     def changed(attribute)
       keys_for_attribute(attribute).each do |cache_key|
-        timeout(cache_key) do
+        block = lambda do
           invalidate(cache_key)
           regenerate(cache_key)
         end
+        @throttle ? timeout(cache_key, &block) : block.call
       end
     end
     

@@ -56,7 +56,6 @@ module Primer
       end
       
       def timeout(cache_key, &block)
-        return block.call unless @throttle
         return if has_key?('timeouts' + cache_key)
         @redis.set('timeouts' + cache_key, 'true')
         add_timeout(cache_key, @throttle) do

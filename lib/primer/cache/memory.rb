@@ -51,7 +51,6 @@ module Primer
       end
       
       def timeout(cache_key, &block)
-        return block.call unless @throttle
         add_timeout(cache_key, @throttle, &block)
       end
     end
