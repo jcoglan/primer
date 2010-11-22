@@ -70,7 +70,7 @@ shared_examples_for "primer cache" do
     
     before do
       cache.routes = Primer::RouteSet.new do
-        get('/name')     { Person.first.name }
+        get('/name')    { Person.first.name }
         get('/bar/:id') { params[:id] }
         get('/count')   { Person.first.blog_posts.count }
         get('/author')  { BlogPost.first.person.name }
@@ -127,6 +127,8 @@ shared_examples_for "primer cache" do
       it "regenerates the cache when an associated collection changes" do
         BlogPost.create(:person => @person, :title => "ROFLscale")
         cache.get("/count").to_i.should == 1
+        @person.blog_posts.destroy_all
+        cache.get("/count").to_i.should == 0
       end
       
       it "regenerates the cache when an association is changed" do
@@ -137,6 +139,14 @@ shared_examples_for "primer cache" do
       it "regenerates the cache when an associated object changes" do
         @impostor.update_attribute(:name, "Steve")
         cache.get("/author").should == "Steve"
+      end
+      
+      it "removes a cache key when data it uses is deleted" do
+        cache.compute("/aaron") { Person.find_by_name("Aaron").name }
+        cache.get("/aaron").should == "Aaron"
+        @impostor.destroy
+        cache.get("/aaron").should be_nil
+        cache.has_key?("/aaron").should be_false
       end
     end
   end

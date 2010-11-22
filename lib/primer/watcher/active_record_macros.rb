@@ -7,6 +7,7 @@ module Primer
         klass.__send__(:include, InstanceMethods)
         klass.after_create(:notify_primer_after_create)
         klass.after_update(:notify_primer_after_update)
+        klass.after_destroy(:notify_primer_after_destroy)
       end
       
       def attributes_watchable_by_primer
@@ -50,7 +51,7 @@ module Primer
           ['ActiveRecord', self.class.name, read_attribute(self.class.primary_key)]
         end
         
-        def notify_primer_after_create
+        def notify_primer_about_belongs_to_associations
           self.class.reflect_on_all_associations.each do |assoc|
             next unless assoc.macro == :belongs_to
             
@@ -67,15 +68,28 @@ module Primer
           end
         end
         
-        def notify_primer_after_update
+        def notify_primer_about_attributes(fields)
           foreign_keys = self.class.primer_foreign_key_mappings
           
-          changes.each do |attribute, (old_value, new_value)|
+          fields.each do |attribute, value|
             Primer.bus.publish(primer_identifier + [attribute.to_s])
             if assoc = foreign_keys[attribute.to_s]
               Primer.bus.publish(primer_identifier + [assoc.to_s])
             end
           end
+        end
+        
+        def notify_primer_after_create
+          notify_primer_about_belongs_to_associations
+        end
+        
+        def notify_primer_after_update
+          notify_primer_about_attributes(changes)
+        end
+        
+        def notify_primer_after_destroy
+          notify_primer_about_attributes(attributes)
+          notify_primer_about_belongs_to_associations
         end
       end
     end

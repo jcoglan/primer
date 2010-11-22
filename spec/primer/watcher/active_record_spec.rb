@@ -11,7 +11,7 @@ describe Primer::Watcher::ActiveRecordMacros do
   end
   
   after do
-    @person.destroy
+    @person.delete
   end
   
   describe "#primer_identifier" do
@@ -52,9 +52,25 @@ describe Primer::Watcher::ActiveRecordMacros do
     @person.update_attribute(:name, "Aaron")
   end
   
+  it "publishes messages when an object is deleted" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "id"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "name"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "age"])
+    @person.destroy
+  end
+  
   it "publishes a message when a has_many collection gains a member" do
     Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "blog_posts"])
     BlogPost.create(:person => @person, :title => "How to make a time machine")
+  end
+  
+  it "publishes a message when a has_many collection loses a member" do
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "id"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "person_id"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "title"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "BlogPost", @post.id, "person"])
+    Primer.bus.should_receive(:publish).with(["ActiveRecord", "Person", @person.id, "blog_posts"])
+    @post.destroy
   end
   
   it "publishes a message about a belongs_to association when the foreign key changes" do
