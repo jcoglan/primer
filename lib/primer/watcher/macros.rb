@@ -20,6 +20,12 @@ module Primer
         @primer_watched_calls += methods
       end
       
+      def inherited(subclass)
+        super
+        calls = @primer_watched_calls || []
+        subclass.watch_calls_to(*calls)
+      end
+      
       def patch_for_primer!
         return if @primer_watched_calls.nil? or @primer_patched
         @primer_patched = true
@@ -30,6 +36,7 @@ module Primer
       
       def patch_method_for_primer(method_name)
         alias_name = Macros.alias_name(method_name)
+        return unless method = instance_method(method_name) rescue nil
         class_eval <<-RUBY
           alias :#{alias_name} :#{method_name}
           def #{method_name}(*args, &block)
@@ -50,6 +57,7 @@ module Primer
       
       def unpatch_method_for_primer(method_name)
         alias_name = Macros.alias_name(method_name)
+        return unless method = instance_method(alias_name) rescue nil
         class_eval <<-RUBY
           alias :#{method_name} :#{alias_name}
           undef_method :#{alias_name}

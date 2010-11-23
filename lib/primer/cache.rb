@@ -5,14 +5,12 @@ module Primer
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
     include Watcher
+    watch_calls_to :get
+    
     include Faye::Timeouts
     
     attr_accessor :throttle
     attr_writer :routes
-    
-    def self.inherited(klass)
-      klass.watch_calls_to :get
-    end
     
     def primer_identifier
       [Cache.name]
