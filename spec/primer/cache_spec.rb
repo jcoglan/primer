@@ -4,6 +4,7 @@ shared_examples_for "primer cache" do
   before do
     Primer.cache = cache
     cache.bind_to_bus
+    Primer::Worker::ActiveRecordAgent.bind_to_bus
     
     @person   = Person.create(:name => "Abe")
     @impostor = Person.create(:name => "Aaron")
