@@ -13,19 +13,12 @@ ActiveRecord::Base.establish_connection(
   :adapter  => 'sqlite3',
   :database => dir + '/db/test.sqlite3')
 
-ActiveRecord::Schema.define do |version|
-  create_table :blog_posts, :force => true do |t|
-    t.belongs_to :person
-    t.string :title
-  end
-  
-  create_table :people, :force => true do |t|
-    t.string  :name
-    t.integer :age
-  end
-end
+require 'schema'
 
 require 'models/watchable'
+require 'models/artist'
+require 'models/concert'
+require 'models/performance'
 require 'models/blog_post'
 require 'models/person'
 
@@ -44,7 +37,7 @@ RSpec.configure do |config|
     end
     Primer::Watcher.reset!
     Primer.bus.unsubscribe_all
-    [BlogPost, Person].each { |m| m.delete_all }
+    [BlogPost, Person, Artist, Concert, Performance].each { |m| m.delete_all }
   end
 end
 

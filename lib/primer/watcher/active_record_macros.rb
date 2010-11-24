@@ -31,12 +31,14 @@ module Primer
           next unless mirror
           
           Primer.bus.publish(owner.primer_identifier + [mirror.name.to_s])
+          notify_has_many_through_association(owner, mirror.name)
         end
       end
       
       def self.notify_has_many_associations(instance)
         instance.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :has_many
+          next if assoc.options[:dependent] == :destroy
           
           instance.__send__(assoc.name).each do |object|
             mirror = ActiveRecordMacros.mirror_association(instance, object, :belongs_to)
@@ -44,6 +46,13 @@ module Primer
             
             Primer.bus.publish(object.primer_identifier + [mirror.name.to_s])
           end
+        end
+      end
+      
+      def self.notify_has_many_through_association(instance, through_name)
+        instance.class.reflect_on_all_associations.each do |assoc|
+          next unless assoc.macro == :has_many and assoc.options[:through] == through_name
+          Primer.bus.publish(instance.primer_identifier + [assoc.name.to_s])
         end
       end
       
