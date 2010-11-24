@@ -16,11 +16,16 @@ module Primer
   autoload :Watcher,  ROOT + '/primer/watcher'
   autoload :Helpers,  ROOT + '/primer/helpers'
   autoload :RealTime, ROOT + '/primer/real_time'
+  autoload :Worker,   ROOT + '/primer/worker'
   
   class << self
     attr_accessor :cache, :bus, :real_time
   end
   
   self.bus = Bus::Memory.new
+  
+  def self.worker!
+    Worker.new.run
+  end
 end
 

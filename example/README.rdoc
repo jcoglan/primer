@@ -38,17 +38,17 @@ model from <tt>environment.rb</tt> and just sets up a couple of pages.
 
 The meat of the system is in <tt>environment.rb</tt>. This file loads the
 gems we need, loads our models, and configures Primer. See that file for more
-details, but note that it uses an AMQP bus and does not bind the cache to
-the bus: this is because we want individual processes to decide whether
-they perform cache expiry.
+details, but note that it uses an AMQP bus - this means we can compute cache
+changes outside the app process. You'll need to start <tt>worker.rb</tt> so
+that your changes get processed.
 
 
 === worker.rb
 
-This file just loads <tt>environment.rb</tt>, then binds the Primer cache to
-the message bus. This picks up data change notifications from the rest of the
-system and makes the cache react to them. You can spin up any number of these
-workers to distribute the load: just run
+This file just loads <tt>environment.rb</tt>, then tells Primer to start a
+worker. The call to <tt>Primer.worker!</tt> is blocking, and makes Primer
+pick up messages from the AMQP bus and process them. You can start as many
+of these as you like to distribute the work. Just run:
 
   ruby worker.rb
 
