@@ -23,9 +23,7 @@ module Primer
     end
     
     def bind_to_bus
-      Primer.bus.subscribe do |message|
-        changed(message)
-      end
+      Primer.bus.subscribe(:changes, &method(:changed))
     end
     
     def compute(cache_key)
@@ -66,7 +64,7 @@ module Primer
   private
     
     def publish_change(cache_key)
-      Primer.bus.publish(primer_identifier + ['get', cache_key])
+      Primer.bus.publish(:changes, primer_identifier + ['get', cache_key])
     end
     
     def regenerate(cache_key)

@@ -2,8 +2,8 @@ module Primer
   class Bus
     
     class Memory < Bus
-      def publish(message)
-        @listeners.each { |cb| cb.call(message) }
+      def publish(topic, message)
+        distribute(topic, message)
       end
     end
     

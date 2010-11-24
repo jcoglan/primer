@@ -21,7 +21,7 @@ describe Primer::Watcher::ActiveRecordMacros do
   end
   
   def should_publish(*message)
-    Primer.bus.should_receive(:publish).with(message)
+    Primer.bus.should_receive(:publish).with(:changes, message)
   end
   
   describe "#primer_identifier" do

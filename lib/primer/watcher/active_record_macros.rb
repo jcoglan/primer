@@ -13,9 +13,9 @@ module Primer
         foreign_keys = instance.class.primer_foreign_key_mappings
         
         fields.each do |attribute, value|
-          Primer.bus.publish(instance.primer_identifier + [attribute.to_s])
+          Primer.bus.publish(:changes, instance.primer_identifier + [attribute.to_s])
           if assoc = foreign_keys[attribute.to_s]
-            Primer.bus.publish(instance.primer_identifier + [assoc.to_s])
+            Primer.bus.publish(:changes, instance.primer_identifier + [assoc.to_s])
           end
         end
       end
@@ -30,7 +30,7 @@ module Primer
           mirror = ActiveRecordMacros.mirror_association(instance, owner, :has_many)
           next unless mirror
           
-          Primer.bus.publish(owner.primer_identifier + [mirror.name.to_s])
+          Primer.bus.publish(:changes, owner.primer_identifier + [mirror.name.to_s])
           notify_has_many_through_association(owner, mirror.name)
         end
       end
@@ -44,7 +44,7 @@ module Primer
             mirror = ActiveRecordMacros.mirror_association(instance, object, :belongs_to)
             next unless mirror
             
-            Primer.bus.publish(object.primer_identifier + [mirror.name.to_s])
+            Primer.bus.publish(:changes, object.primer_identifier + [mirror.name.to_s])
           end
         end
       end
@@ -52,7 +52,7 @@ module Primer
       def self.notify_has_many_through_association(instance, through_name)
         instance.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :has_many and assoc.options[:through] == through_name
-          Primer.bus.publish(instance.primer_identifier + [assoc.name.to_s])
+          Primer.bus.publish(:changes, instance.primer_identifier + [assoc.name.to_s])
         end
       end
       

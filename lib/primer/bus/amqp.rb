@@ -9,11 +9,12 @@ module Primer
         super()
       end
       
-      def publish(message)
-        queue.publish(YAML.dump(message))
+      def publish(topic, message)
+        tuple = [topic, message]
+        queue.publish(YAML.dump(tuple))
       end
       
-      def subscribe
+      def subscribe(*args, &block)
         bind
         super
       end
@@ -31,7 +32,7 @@ module Primer
         return if @bound
         queue.subscribe do |message|
           data = YAML.load(message)
-          @listeners.each { |cb| cb.call(data) }
+          distribute(*data)
         end
         @bound = true
       end

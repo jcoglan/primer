@@ -8,16 +8,21 @@ module Primer
       unsubscribe_all
     end
     
-    def subscribe(&listener)
-      @listeners.add(listener)
+    def distribute(topic, message)
+      return unless @listeners.has_key?(topic)
+      @listeners[topic].each { |cb| cb.call(message) }
     end
     
-    def unsubscribe(&listener)
-      @listeners.delete(listener)
+    def subscribe(topic, &listener)
+      @listeners[topic].add(listener)
+    end
+    
+    def unsubscribe(topic, &listener)
+      @listeners[topic].delete(listener)
     end
     
     def unsubscribe_all
-      @listeners = Set.new
+      @listeners = Hash.new { |h,k| h[k] = Set.new }
     end
     
   end

@@ -3,13 +3,19 @@ require 'spec_helper'
 shared_examples_for "primer event bus" do
   before do
     @message = nil
-    bus.subscribe { |message| @message = message }
+    bus.subscribe(:changes) { |message| @message = message }
   end
   
   it "transmits messages verbatim" do
-    bus.publish ["series", "of", "params"]
+    bus.publish :changes, ["series", "of", "params"]
     sleep 1.0
     @message.should == ["series", "of", "params"]
+  end
+  
+  it "routes messages to the right channel" do
+    bus.publish :other, "something"
+    sleep 1.0
+    @message.should be_nil
   end
 end
 
