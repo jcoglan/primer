@@ -1,9 +1,9 @@
 = Primer
 
-This is an experiment to bring automatic cache expiry and regeneration to
-Rails. At Songkick[http://www.songkick.com], we have a ton of code that deals
-with caches and denormalization and it's hard to maintain. I want to get rid of
-it. All of it.
+This is an experiment to bring automatic cache expiry and regeneration to Rails.
+At Songkick[http://www.songkick.com], we have a ton of code that deals with caches
+and denormalization and messages and offline processing and it's hard to maintain.
+I want to get rid of it. All of it.
 
 
 == What?
@@ -29,7 +29,7 @@ just declare how to render your site, Primer does the rest.
 == Enough waffle, show me the code!
 
 The following is the minimal, 'hello world' use case. Get your ActiveRecord
-model, put a mixin in it:
+model, put a mixn in it (<em>after</em> declaring the model's associations):
 
   class BlogPost < ActiveRecord::Base
     include Primer::Watcher
@@ -61,6 +61,14 @@ The output of the block gets cached to Redis using the given key. Once the
 output is cached, the block will not be called again. The cache is invalidated
 when (and only when) the title of <tt>@post</tt> changes; Primer figures this
 out and you don't need to write any cache sweeping code.
+
+Finally you need to bind the cache to the event bus, unless you want to run the
+cache monitoring work in a background process (see below):
+
+  Primer.cache.bind_to_bus
+  
+  # If you're using ActiveRecord
+  Primer::Worker::ActiveRecordAgent.bind_to_bus
 
 
 === Declaring cache generators
@@ -132,6 +140,28 @@ regenerating it, allowing other data changes to accrue before we update the
 cache.
 
 
+=== Background workers
+
+You'll probably want to move a lot of the work Primer does out of your front-end
+process. Primer includes an AMQP message bus to support this, and setting it up
+is easy - put this somewhere in your app's setup:
+
+  Primer.bus = Primer::Bus::AMQP.new(:queue => 'my_app_events')
+
+To make a background worker, you just need a file like this:
+
+  # worker.rb
+  
+  # load your models, config, Primer routes etc
+  require 'path/to/app/environment'
+  
+  Primer.worker!
+
+Running <tt>ruby worker.rb</tt> will start a process in the shell that listens
+for change notifications and updates the cache for you. You can start as many
+of these as you like to spread the load out.
+
+
 === Real-time page updates
 
 If you want to be properly web-scale, you'll need to be updating your pages
@@ -163,11 +193,18 @@ bus and inject arbitrary HTML into your pages.
 
 == Examples
 
-See <tt>example/README.rdoc</tt>.
+See <tt>example/README.rdoc</tt>, a little Sinatra blog with a Redis cache,
+offline cache workers and real-time page updates.
 
 
-== Copyright
+== Anything else?
 
-Copyright (c) 2010 Songkick.com. Named by the inimitable
-grillpanda[http://github.com/grillpanda].
+I'm NOT using this in production, and neither should you. Ideas and feedback
+welcome, pull requests considered, bug reports likely to gather dust.
+
+
+== License
+
+Copyright (c) 2010 Songkick.com, James Coglan. Named by the inimitable
+grillpanda[http://github.com/grillpanda]. Released under the MIT license.
 

@@ -75,8 +75,9 @@ task :package => :gemspec
 
 # Generate documentation
 Rake::RDocTask.new do |rd|
-  rd.rdoc_files.include("README.rdoc")
-  rd.rdoc_files.include("lib/**/*.rb")
+  rd.title = "Primer"
+  rd.main = "README.rdoc"
+  rd.rdoc_files.include("README.rdoc", "lib/**/*.rb")
   rd.rdoc_dir = "rdoc"
 end
 
