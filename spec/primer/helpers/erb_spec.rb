@@ -69,7 +69,8 @@ describe "Rails3 ERB templates" do
 
   let :output do
     controller.render(:file => "spec/templates/page.erb", :action => "show") rescue
-    controller.response_body.first
+    body = controller.response_body
+    Array === body ? body.first : body
   end
   
   it_should_behave_like "erb helper"
