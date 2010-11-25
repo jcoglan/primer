@@ -23,7 +23,7 @@ module Primer
     end
     
     def bind_to_bus
-      Primer.bus.subscribe(:changes, &method(:changed))
+      Primer.bus.subscribe(:changes) { |attribute| changed(attribute) }
     end
     
     def compute(cache_key)
