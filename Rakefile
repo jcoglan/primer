@@ -22,13 +22,13 @@ spec = Gem::Specification.new do |s|
   s.summary           = "Intelligent caching, no observers necessary"
   s.author            = "James Coglan"
   s.email             = "jcoglan@gmail.com"
-  s.homepage          = "http://github.com/songkick/primer"
+  s.homepage          = "http://github.com/jcoglan/primer"
 
   s.has_rdoc          = true
   # You should probably have a README of some kind. Change the filename
   # as appropriate
-   s.extra_rdoc_files  = %w(README.rdoc example/README.rdoc)
-   s.rdoc_options      = %w(--main README.rdoc --title Primer)
+  s.extra_rdoc_files  = %w(README.rdoc example/README.rdoc)
+  s.rdoc_options      = %w(--main README.rdoc --title Primer)
 
   # Add any extra files to include in the gem (like your README)
   s.files             = %w(README.rdoc) + Dir.glob("{spec,lib,example}/**/*")
