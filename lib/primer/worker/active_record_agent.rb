@@ -27,7 +27,6 @@ module Primer
       
       def self.on_destroy(model)
         notify_attributes(model, model.attributes)
-        notify_belongs_to_associations(model)
         notify_has_many_associations(model)
       end
       
@@ -36,25 +35,38 @@ module Primer
         
         fields.each do |attribute, value|
           Primer.bus.publish(:changes, model.primer_identifier + [attribute.to_s])
-          if assoc = foreign_keys[attribute.to_s]
-            Primer.bus.publish(:changes, model.primer_identifier + [assoc.to_s])
-          end
+          
+          next unless assoc = foreign_keys[attribute.to_s]
+          Primer.bus.publish(:changes, model.primer_identifier + [assoc.to_s])
+          notify_belongs_to_association(model, assoc, value)
         end
       end
       
       def self.notify_belongs_to_associations(model)
         model.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :belongs_to
-          
-          owner = model.__send__(assoc.name)
-          next unless owner
-          
-          mirror = mirror_association(model, owner, :has_many)
-          next unless mirror
-          
+          notify_belongs_to_association(model, assoc.name)
+        end
+      end
+      
+      def self.notify_belongs_to_association(model, assoc_name, change = nil)
+        assoc = model.class.reflect_on_association(assoc_name)
+        owner_class = assoc.class_name.constantize
+        
+        mirror = mirror_association(model.class, owner_class, :has_many)
+        
+        if owner = model.__send__(assoc_name)
           Primer.bus.publish(:changes, owner.primer_identifier + [mirror.name.to_s])
           notify_has_many_through_association(owner, mirror.name)
         end
+        
+        return unless Array === change and change.first.any?
+        old_id = change.first.first
+        previous = owner_class.find(:first, :conditions => {owner_class.primary_key => old_id})
+        return unless previous
+        
+        Primer.bus.publish(:changes, previous.primer_identifier + [mirror.name.to_s])
+        notify_has_many_through_association(previous, mirror.name)
       end
       
       def self.notify_has_many_associations(model)
@@ -67,7 +79,7 @@ module Primer
           related  = klass.find(:all, :conditions => {assoc.primary_key_name => model_id})
           
           related.each do |object|
-            mirror = mirror_association(model, object, :belongs_to)
+            mirror = mirror_association(model.class, object.class, :belongs_to)
             next unless mirror
             
             Primer.bus.publish(:changes, object.primer_identifier + [mirror.name.to_s])
@@ -77,15 +89,28 @@ module Primer
       
       def self.notify_has_many_through_association(model, through_name)
         model.class.reflect_on_all_associations.each do |assoc|
-          next unless assoc.macro == :has_many and assoc.options[:through] == through_name
-          Primer.bus.publish(:changes, model.primer_identifier + [assoc.name.to_s])
+          next unless assoc.macro == :has_many
+          
+          if assoc.options[:through] == through_name
+            Primer.bus.publish(:changes, model.primer_identifier + [assoc.name.to_s])
+          end
+          
+          assoc.class_name.constantize.reflect_on_all_associations.each do |secondary|
+            next unless secondary.macro == :has_many and secondary.options[:through] and
+                        secondary.source_reflection.active_record == model.class and
+                        secondary.source_reflection.name == through_name
+            
+            model.__send__(assoc.name).each do |related|
+              Primer.bus.publish(:changes, related.primer_identifier + [secondary.name.to_s])
+            end
+          end
         end
       end
       
-      def self.mirror_association(object, related, macro)
-        related.class.reflect_on_all_associations.find do |mirror_assoc|
+      def self.mirror_association(object_class, related_class, macro)
+        related_class.reflect_on_all_associations.find do |mirror_assoc|
           mirror_assoc.macro == macro and
-          mirror_assoc.class_name == object.class.name
+          mirror_assoc.class_name == object_class.name
         end
       end
     end

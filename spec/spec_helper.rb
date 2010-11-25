@@ -1,7 +1,7 @@
 dir = File.expand_path(File.dirname(__FILE__))
 $:.unshift(dir)
 
-require 'primer'
+require dir + '/../lib/primer'
 require 'tilt'
 require 'erb'
 require 'action_controller'
@@ -17,6 +17,7 @@ require 'schema'
 
 require 'models/watchable'
 require 'models/artist'
+require 'models/calendar'
 require 'models/concert'
 require 'models/performance'
 require 'models/blog_post'
@@ -45,7 +46,15 @@ RSpec.configure do |config|
     end
     Primer::Watcher.reset!
     Primer.bus.unsubscribe_all
-    [BlogPost, Person, Artist, Concert, Performance].each { |m| m.delete_all }
+    
+    [ BlogPost,
+      Person,
+      Artist,
+      Calendar,
+      Concert,
+      Performance
+      
+    ].each { |m| m.delete_all }
   end
 end
 

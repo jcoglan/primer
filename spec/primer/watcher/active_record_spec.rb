@@ -10,6 +10,7 @@ describe Primer::Watcher::ActiveRecordMacros do
     @artist   = Artist.create(:name => "Wolf Parade")
     @concert  = Concert.create(:date => 6.months.ago, :venue => "Borderline")
     @festival = Concert.create(:date => 3.months.ago, :venue => "End of the Road")
+    @calendar = Calendar.create(:artists => [@artist])
     
     @artist.concerts << @festival
     
@@ -23,7 +24,9 @@ describe Primer::Watcher::ActiveRecordMacros do
   
   def should_publish(topic, *message)
     @publish ||= Primer.bus.method(:publish)
-    Primer.bus.should_receive(:publish).with(topic, message, &@publish)
+    Primer.bus.should_receive(:publish).with(topic, message) do |*args|
+      @publish.call(*args)
+    end
   end
   
   describe "#primer_identifier" do
@@ -84,6 +87,8 @@ describe Primer::Watcher::ActiveRecordMacros do
     should_publish(:active_record, :update, "BlogPost", anything, anything)
     should_publish(:changes, "ActiveRecord", "BlogPost", @post.id, "person_id")
     should_publish(:changes, "ActiveRecord", "BlogPost", @post.id, "person")
+    should_publish(:changes, "ActiveRecord", "Person", @impostor.id, "blog_posts")
+    should_publish(:changes, "ActiveRecord", "Person", @person.id, "blog_posts")
     @post.update_attribute(:person, @impostor)
   end
   
@@ -111,7 +116,7 @@ describe Primer::Watcher::ActiveRecordMacros do
     @artist.concerts << @concert
   end
   
-  it "publishes a message when a join object is pushed to a has_many" do
+  it "publishes a message when a join object is pushed to a has_many :through has_many" do
     should_publish(:active_record, :create, "Performance", anything)
     should_publish(:changes, "ActiveRecord", "Concert", @concert.id, "performances")
     should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "performances")
@@ -127,36 +132,58 @@ describe Primer::Watcher::ActiveRecordMacros do
     Performance.create(:concert => @concert, :artist => @artist)
   end
   
-  it "publishes messages when a join object is deleted from a has_many :through collection" do
-    performance = @festival.performances.first
+  it "publishes messages when a join object is deleted from a has_many :through has_many collection" do
+    @performance = @festival.performances.first
     should_publish(:active_record, :destroy, "Performance", anything)
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "artist_id")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "artist")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "concert_id")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "concert")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "artist_id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "artist")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "concert_id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "concert")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "id")
     should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "performances")
     should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "concerts")
     should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "performances")
     @artist.performances.first.destroy
   end
   
-  it "publishes messages when a member is deleted from a has_many :through collection" do
-    performance = @festival.performances.first
+  it "publishes messages when a member is deleted from a has_many :through has_many collection" do
+    @performance = @festival.performances.first
     should_publish(:active_record, :destroy, "Performance", anything)
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "artist_id")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "artist")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "concert_id")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "concert")
-    should_publish(:changes, "ActiveRecord", "Performance", performance.id, "id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "artist_id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "artist")
     should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "performances")
     should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "concerts")
-    should_publish(:active_record, :destroy, "Concert", anything)
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "concert_id")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "concert")
     should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "performances")
-    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "date")
+    should_publish(:changes, "ActiveRecord", "Performance", @performance.id, "id")
+    should_publish(:active_record, :destroy, "Concert", anything)
     should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "id")
+    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "calendar_id")
+    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "calendar")
+    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "date")
     should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "venue")
     @artist.concerts.first.destroy
+  end
+  
+  it "publishes messages when a join object is pushed to a has_many :through belongs_to" do
+    should_publish(:active_record, :update, "Concert", anything, anything)
+    should_publish(:changes, "ActiveRecord", "Concert", @concert.id, "calendar_id")
+    should_publish(:changes, "ActiveRecord", "Concert", @concert.id, "calendar")
+    should_publish(:changes, "ActiveRecord", "Calendar", @calendar.id, "gigs")
+    should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "upcoming_gigs")
+    @calendar.gigs << @concert
+  end
+  
+  it "publishes messages when a join object is removed from a has_many :through belongs_to" do
+    @calendar.gigs << @festival
+    should_publish(:active_record, :update, "Concert", anything, anything)
+    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "calendar_id")
+    should_publish(:changes, "ActiveRecord", "Concert", @festival.id, "calendar")
+    should_publish(:changes, "ActiveRecord", "Calendar", @calendar.id, "gigs")
+    should_publish(:changes, "ActiveRecord", "Artist", @artist.id, "upcoming_gigs")
+    @festival.calendar = nil
+    @festival.save
   end
 end
 
