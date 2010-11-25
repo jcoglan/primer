@@ -199,6 +199,9 @@ offline cache workers and real-time page updates.
 
 == Anything else?
 
+I've tested it on Ruby 1.8.7 and 1.9.2 with Rails 3 and Sinatra 1.1. I've
+briefly tried using it in Rails 2.2 and it looked okay-ish.
+
 I'm NOT using this in production, and neither should you. Ideas and feedback
 welcome, pull requests considered, bug reports likely to gather dust.
 
