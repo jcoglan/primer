@@ -22,6 +22,14 @@ require 'models/performance'
 require 'models/blog_post'
 require 'models/person'
 
+module Helper
+  def self.next_id
+    @next_id ||= 0
+    @next_id += 1
+    @next_id
+  end
+end
+
 RSpec.configure do |config|
   config.before do
     Primer::Watcher.disable!
