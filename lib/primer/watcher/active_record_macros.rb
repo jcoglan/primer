@@ -52,15 +52,15 @@ module Primer
         end
         
         def notify_primer_after_create
-          Primer.bus.publish(:active_record, [:create, self])
+          Primer.bus.publish(:active_record, [:create, self.class.name, attributes])
         end
         
         def notify_primer_after_update
-          Primer.bus.publish(:active_record, [:update, self])
+          Primer.bus.publish(:active_record, [:update, self.class.name, attributes, changes])
         end
         
         def notify_primer_after_destroy
-          Primer.bus.publish(:active_record, [:destroy, self])
+          Primer.bus.publish(:active_record, [:destroy, self.class.name, attributes])
         end
       end
     end

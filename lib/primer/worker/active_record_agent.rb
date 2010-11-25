@@ -3,7 +3,12 @@ module Primer
     
     class ActiveRecordAgent
       def self.bind_to_bus
-        Primer.bus.subscribe :active_record do |(event, model)|
+        Primer.bus.subscribe :active_record do |event, class_name, attributes, changes|
+          model = class_name.constantize.new(attributes)
+          model.instance_eval do
+            @attributes = attributes
+            @changed_attributes = changes if changes
+          end
           __send__("on_#{event}", model)
         end
       end
@@ -57,7 +62,11 @@ module Primer
           next unless assoc.macro == :has_many
           next if assoc.options[:dependent] == :destroy
           
-          model.__send__(assoc.name).each do |object|
+          model_id = model.__send__(model.class.primary_key)
+          klass    = assoc.class_name.constantize
+          related  = klass.find(:all, :conditions => {assoc.primary_key_name => model_id})
+          
+          related.each do |object|
             mirror = mirror_association(model, object, :belongs_to)
             next unless mirror
             

@@ -3,12 +3,19 @@ require 'spec_helper'
 shared_examples_for "primer cache" do
   before do
     Primer.cache = cache
+    Primer.bus   = bus
+    
     cache.bind_to_bus
     Primer::Worker::ActiveRecordAgent.bind_to_bus
+    sync
     
     @person   = Person.create(:name => "Abe")
     @impostor = Person.create(:name => "Aaron")
     @post     = BlogPost.create(:person => @impostor, :title => "roflmillions")
+  end
+  
+  def sync
+    sleep sync_time
   end
   
   describe "#compute with a block" do
@@ -50,16 +57,19 @@ shared_examples_for "primer cache" do
       it "invalidates the cache when related data changes" do
         cache.should_receive(:invalidate).with("/people/abe/name")
         @person.update_attribute(:name, "Aaron")
+        sync
       end
       
       it "does not invalidate the cache when a different object changes" do
         cache.should_not_receive(:invalidate)
         @impostor.update_attribute(:name, "Weeble")
+        sync
       end
       
       it "does not invalidate the cache when unrelated data changes" do
         cache.should_not_receive(:invalidate)
         @person.update_attribute(:age, 28)
+        sync
       end
     end
   end
@@ -122,30 +132,37 @@ shared_examples_for "primer cache" do
       
       it "regenerates the cache when related data changes" do
         @person.update_attribute(:name, "Aaron")
+        sync
         cache.get("/name").should == "Aaron"
       end
       
       it "regenerates the cache when an associated collection changes" do
         BlogPost.create(:person => @person, :title => "ROFLscale")
+        sync
         cache.get("/count").to_i.should == 1
         @person.blog_posts.destroy_all
+        sync
         cache.get("/count").to_i.should == 0
       end
       
       it "regenerates the cache when an association is changed" do
         @post.update_attribute(:person, @person)
+        sync
         cache.get("/author").should == "Abe"
       end
       
       it "regenerates the cache when an associated object changes" do
         @impostor.update_attribute(:name, "Steve")
+        sync
         cache.get("/author").should == "Steve"
       end
       
       it "removes a cache key when data it uses is deleted" do
         cache.compute("/aaron") { Person.find_by_name("Aaron").name }
+        sync
         cache.get("/aaron").should == "Aaron"
         @impostor.destroy
+        sync
         cache.get("/aaron").should be_nil
         cache.has_key?("/aaron").should be_false
       end
@@ -176,6 +193,7 @@ shared_examples_for "primer cache" do
       
       it "updates the cache when the title changes" do
         @post.update_attribute(:title, "It's toasted")
+        sync
         cache.get("/title").should == "It's toasted"
         cache.get("/content").should == "AaronIt's toasted"
       end
@@ -268,11 +286,24 @@ end
 
 describe Primer::Cache::Memory do
   let(:cache) { Primer::Cache::Memory.new }
-  it_should_behave_like "primer cache"
+  
+  describe "with an in-memory bus" do
+    let(:bus) { Primer::Bus::Memory.new }
+    let(:sync_time) { 0 }
+    it_should_behave_like "primer cache"
+  end
+  
+  describe "with an AMQP bus" do
+    let(:bus) { Primer::Bus::AMQP.new(:queue => "data_changes_#{rand 1000}") }
+    let(:sync_time) { 0.2 }
+    it_should_behave_like "primer cache"
+  end
 end
 
 describe Primer::Cache::Redis do
   let(:cache) { Primer::Cache::Redis.new }
+  let(:bus) { Primer::Bus::Memory.new }
+  let(:sync_time) { 0 }
   it_should_behave_like "primer cache"
 end
 
