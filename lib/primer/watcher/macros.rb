@@ -2,8 +2,6 @@ module Primer
   module Watcher
     
     module Macros
-      attr_reader :primer_watched_calls
-      
       def self.extended(klass)
         if defined?(ActiveRecord) and klass < ActiveRecord::Base
           klass.extend(ActiveRecordMacros)
@@ -14,22 +12,21 @@ module Primer
         method_name.to_s.gsub(/[^a-z0-9_]$/i, '') + '_before_primer_patch'
       end
       
-      def watch_calls_to(*methods)
-        Watcher.register(self)
-        @primer_watched_calls ||= []
-        @primer_watched_calls += methods
+      def primer_watched_calls
+        @primer_watched_calls ||= (Macros === superclass) ?
+                                  superclass.primer_watched_calls.dup :
+                                  Set.new
       end
       
-      def inherited(subclass)
-        super
-        calls = @primer_watched_calls || []
-        subclass.watch_calls_to(*calls)
+      def watch_calls_to(*methods)
+        method_names = methods.map { |m| m.to_s }
+        primer_watched_calls.merge(method_names)
       end
       
       def patch_for_primer!
-        return if @primer_watched_calls.nil? or @primer_patched
+        return if @primer_patched
         @primer_patched = true
-        @primer_watched_calls.each do |method_name|
+        primer_watched_calls.each do |method_name|
           patch_method_for_primer(method_name)
         end
       end
@@ -48,9 +45,9 @@ module Primer
       end
       
       def unpatch_for_primer!
-        return if @primer_watched_calls.nil? or not @primer_patched
+        return unless @primer_patched
         @primer_patched = false
-        @primer_watched_calls.each do |method_name|
+        primer_watched_calls.each do |method_name|
           unpatch_method_for_primer(method_name)
         end
       end

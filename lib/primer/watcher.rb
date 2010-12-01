@@ -9,11 +9,6 @@ module Primer
       klass.extend(Macros)
     end
     
-    def self.register(klass)
-      @classes ||= Set.new
-      @classes.add(klass)
-    end
-    
     def self.reset!
       Thread.current[:primer_call_log] = []
       Thread.current[:primer_loggers]  = nil
@@ -33,11 +28,11 @@ module Primer
     end
     
     def self.on_enable
-      @classes.each { |klass| klass.patch_for_primer! }
+      ObjectSpace.each_object(Macros) { |klass| klass.patch_for_primer! }
     end
     
     def self.on_disable
-      @classes.each { |klass| klass.unpatch_for_primer! }
+      ObjectSpace.each_object(Macros) { |klass| klass.unpatch_for_primer! }
     end
     
     def self.watching(calls = [])
