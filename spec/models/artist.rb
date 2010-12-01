@@ -6,5 +6,6 @@ class Artist < ActiveRecord::Base
   has_many :upcoming_gigs, :through => :calendar, :source => :gigs
   
   include Primer::Watcher
+  include Primer::Lazyness
 end
 

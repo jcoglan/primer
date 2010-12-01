@@ -14,6 +14,7 @@ module Primer
   autoload :RouteSet, ROOT + '/primer/route_set'
   autoload :Enabler,  ROOT + '/primer/enabler'
   autoload :Watcher,  ROOT + '/primer/watcher'
+  autoload :Lazyness, ROOT + '/primer/lazyness'
   autoload :Helpers,  ROOT + '/primer/helpers'
   autoload :RealTime, ROOT + '/primer/real_time'
   autoload :Worker,   ROOT + '/primer/worker'
