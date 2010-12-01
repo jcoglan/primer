@@ -34,11 +34,19 @@ module Primer
       end
       
       def method_missing(method_name, *args, &block)
-        if method_name.to_s == @primary_key.to_s
-          @load_method.to_s == 'eager_method_missing' ? @arguments[1] : @arguments.first
-        else
-          __subject__.__send__(method_name, *args, &block)
+        if @load_method.to_s == 'eager_method_missing'
+          if method_name.to_s == @arguments.first.to_s.gsub(/^find_by_/, '')
+            return @arguments[1]
+          else
+            return __subject__.__send__(method_name, *args, &block)
+          end
         end
+        
+        if method_name.to_s == @primary_key.to_s
+          return @arguments.first
+        end
+        
+        __subject__.__send__(method_name, *args, &block)
       end
       
     private
