@@ -10,8 +10,8 @@ module Primer
       end
       
       def publish(topic, message)
-        tuple = [topic, message]
-        queue.publish(YAML.dump(tuple))
+        tuple = [topic.to_s, message]
+        queue.publish(Primer.serialize(tuple))
       end
       
       def subscribe(*args, &block)
@@ -31,7 +31,7 @@ module Primer
       def bind
         return if @bound
         queue.subscribe do |message|
-          data = YAML.load(message)
+          data = Primer.deserialize(message)
           distribute(*data)
         end
         @bound = true

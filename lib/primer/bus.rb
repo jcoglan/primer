@@ -9,16 +9,17 @@ module Primer
     end
     
     def distribute(topic, message)
+      topic = topic.to_s
       return unless @listeners.has_key?(topic)
       @listeners[topic].each { |cb| cb.call(message) }
     end
     
     def subscribe(topic, &listener)
-      @listeners[topic].add(listener)
+      @listeners[topic.to_s].add(listener)
     end
     
     def unsubscribe(topic, &listener)
-      @listeners[topic].delete(listener)
+      @listeners[topic.to_s].delete(listener)
     end
     
     def unsubscribe_all

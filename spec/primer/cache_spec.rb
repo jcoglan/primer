@@ -249,7 +249,7 @@ shared_examples_for "primer cache" do
     end
     
     it "can store arbitrary data" do
-      value = ["foo", 4, [5, :bar], {:qux => [6, 7]}]
+      value = ["foo", 4, [5, "bar"], {"qux" => [6, 7]}]
       cache.put("/key", value)
       cache.get("/key").should == value
     end

@@ -36,6 +36,7 @@ spec = Gem::Specification.new do |s|
 
   # If you want to depend on other gems, add them here, along with any
   # relevant versions
+  s.add_dependency("json", "~> 1.4.6")
   s.add_dependency("redis", "~> 2.1.1")
   s.add_dependency("sinatra", "~> 1.1.0")
   s.add_dependency("amqp", "~> 0.6.7")

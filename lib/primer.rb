@@ -1,6 +1,6 @@
+require 'json'
 require 'faye'
 require 'set'
-require 'yaml'
 
 module Primer
   ROOT = File.expand_path(File.dirname(__FILE__))
@@ -27,6 +27,14 @@ module Primer
   
   def self.worker!
     Worker.new.run
+  end
+  
+  def self.serialize(object)
+    JSON.unparse([object])
+  end
+  
+  def self.deserialize(string)
+    JSON.parse(string).first
   end
 end
 
