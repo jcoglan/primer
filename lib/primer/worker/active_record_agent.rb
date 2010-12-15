@@ -13,10 +13,6 @@ module Primer
         end
       end
       
-      def self.macros
-        Watcher::ActiveRecordMacros
-      end
-      
       def self.on_create(model)
         notify_belongs_to_associations(model)
       end
