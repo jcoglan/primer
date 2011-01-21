@@ -19,6 +19,7 @@ module Primer
   class Router < Sinatra::Base
     class Request
       attr_reader :path_info
+      alias :route :path_info
       def initialize(path)
         @path_info = path
       end
