@@ -26,7 +26,7 @@ module Primer
   self.bus = Bus::Memory.new
   
   def self.worker!
-    Worker.new.run
+    Worker.run
   end
   
   def self.serialize(object)
