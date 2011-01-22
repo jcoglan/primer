@@ -293,11 +293,11 @@ describe Primer::Cache::Memory do
     it_should_behave_like "primer cache"
   end
   
-  describe "with an AMQP bus" do
-    let(:bus) { Primer::Bus::AMQP.new(:queue => "data_changes_#{Helper.next_id}") }
-    let(:sync_time) { 0.2 }
-    it_should_behave_like "primer cache"
-  end
+  # describe "with an AMQP bus" do
+  #   let(:bus) { Primer::Bus::AMQP.new(:queue => "data_changes_#{Helper.next_id}") }
+  #   let(:sync_time) { 0.2 }
+  #   it_should_behave_like "primer cache"
+  # end
 end
 
 describe Primer::Cache::Redis do

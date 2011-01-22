@@ -16,6 +16,7 @@ ActiveRecord::Base.establish_connection(
 require 'schema'
 
 require 'models/watchable'
+require 'models/detachable'
 require 'models/artist'
 require 'models/calendar'
 require 'models/concert'
@@ -37,6 +38,7 @@ RSpec.configure do |config|
     Primer.bus = Primer::Bus::Memory.new
     Primer.cache = nil
     Primer.real_time = false
+    Faye.ensure_reactor_running!
   end
   
   config.after do

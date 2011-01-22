@@ -4,7 +4,8 @@ module Primer
     autoload :Memory, ROOT + '/primer/bus/memory'
     autoload :AMQP,   ROOT + '/primer/bus/amqp'
     
-    def initialize
+    def initialize(config = {})
+      @config = config
       unsubscribe_all
     end
     

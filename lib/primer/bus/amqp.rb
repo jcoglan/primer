@@ -4,11 +4,6 @@ module Primer
   class Bus
     
     class AMQP < Bus
-      def initialize(config = {})
-        @config = config
-        super()
-      end
-      
       def publish(topic, message)
         tuple = [topic.to_s, message]
         queue.publish(Primer.serialize(tuple))

@@ -1,5 +1,5 @@
 module Primer
-  class Worker
+  module Worker
     
     class ActiveRecordAgent
       def self.bind_to_bus

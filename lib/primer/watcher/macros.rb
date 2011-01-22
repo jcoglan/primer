@@ -9,7 +9,7 @@ module Primer
       end
       
       def self.alias_name(method_name)
-        method_name.to_s.gsub(/[^a-z0-9_]$/i, '') + '_before_primer_patch'
+        method_name.to_s.gsub(/[^a-z0-9_]$/i, '') + 'before_primer_watcher_patch'
       end
       
       def primer_watched_calls
