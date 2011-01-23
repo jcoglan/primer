@@ -15,7 +15,7 @@ module Primer
       
       EM.run {
         ActiveRecordAgent.bind_to_bus
-        Primer.cache.bind_to_bus
+        bind_to_queue 'changes'
         
         puts "Listening for messages..."
         puts
@@ -58,7 +58,7 @@ module Primer
         class_eval <<-RUBY
           alias :#{alias_name} :#{method_name}
           def #{method_name}(*args, &block)
-            Primer.bus.publish('#{queue_name}',
+            Primer.bus.publish(:#{queue_name},
               'class_name' => self.class.name,
               'object'     => primer_identifier,
               'method'     => '#{method_name}',

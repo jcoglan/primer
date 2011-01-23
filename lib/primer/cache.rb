@@ -4,6 +4,7 @@ module Primer
     autoload :Memory, ROOT + '/primer/cache/memory'
     autoload :Redis,  ROOT + '/primer/cache/redis'
     
+    include Worker
     include Watcher
     watch_calls_to :get
     
@@ -11,6 +12,10 @@ module Primer
     
     attr_accessor :throttle
     attr_writer :routes
+    
+    def self.from_primer_identifier(id)
+      Primer.cache
+    end
     
     def primer_identifier
       [Cache.name]
@@ -20,10 +25,6 @@ module Primer
       @routes ||= RouteSet.new
       @routes.instance_eval(&block) if block_given?
       @routes
-    end
-    
-    def bind_to_bus
-      Primer.bus.subscribe(:changes) { |attribute| changed(attribute) }
     end
     
     def compute(cache_key)
@@ -60,11 +61,12 @@ module Primer
         @throttle ? timeout(cache_key, &block) : block.call
       end
     end
+    dispatch_to_worker :changed, :queue => 'changes'
     
   private
     
     def publish_change(cache_key)
-      Primer.bus.publish(:changes, primer_identifier + ['get', cache_key])
+      changed(primer_identifier + ['get', cache_key])
     end
     
     def regenerate(cache_key)

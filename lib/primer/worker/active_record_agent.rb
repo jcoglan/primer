@@ -30,10 +30,10 @@ module Primer
         foreign_keys = model.class.primer_foreign_key_mappings
         
         fields.each do |attribute, value|
-          Primer.bus.publish(:changes, model.primer_identifier + [attribute.to_s])
+          Primer.cache.changed(model.primer_identifier + [attribute.to_s])
           
           next unless assoc = foreign_keys[attribute.to_s]
-          Primer.bus.publish(:changes, model.primer_identifier + [assoc.to_s])
+          Primer.cache.changed(model.primer_identifier + [assoc.to_s])
           notify_belongs_to_association(model, assoc, value)
         end
       end
@@ -52,7 +52,7 @@ module Primer
         mirror = mirror_association(model.class, owner_class, :has_many)
         
         if owner = model.__send__(assoc_name)
-          Primer.bus.publish(:changes, owner.primer_identifier + [mirror.name.to_s])
+          Primer.cache.changed(owner.primer_identifier + [mirror.name.to_s])
           notify_has_many_through_association(owner, mirror.name)
         end
         
@@ -61,7 +61,7 @@ module Primer
         previous = owner_class.find(:first, :conditions => {owner_class.primary_key => old_id})
         return unless previous
         
-        Primer.bus.publish(:changes, previous.primer_identifier + [mirror.name.to_s])
+        Primer.cache.changed(previous.primer_identifier + [mirror.name.to_s])
         notify_has_many_through_association(previous, mirror.name)
       end
       
@@ -78,7 +78,7 @@ module Primer
             mirror = mirror_association(model.class, object.class, :belongs_to)
             next unless mirror
             
-            Primer.bus.publish(:changes, object.primer_identifier + [mirror.name.to_s])
+            Primer.cache.changed(object.primer_identifier + [mirror.name.to_s])
           end
         end
       end
@@ -88,7 +88,7 @@ module Primer
           next unless assoc.macro == :has_many
           
           if assoc.options[:through] == through_name
-            Primer.bus.publish(:changes, model.primer_identifier + [assoc.name.to_s])
+            Primer.cache.changed(model.primer_identifier + [assoc.name.to_s])
           end
           
           assoc.class_name.constantize.reflect_on_all_associations.each do |secondary|
@@ -97,7 +97,7 @@ module Primer
                         secondary.source_reflection.name == through_name
             
             model.__send__(assoc.name).each do |related|
-              Primer.bus.publish(:changes, related.primer_identifier + [secondary.name.to_s])
+              Primer.cache.changed(related.primer_identifier + [secondary.name.to_s])
             end
           end
         end

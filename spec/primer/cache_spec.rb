@@ -5,7 +5,7 @@ shared_examples_for "primer cache" do
     Primer.cache = cache
     Primer.bus   = bus
     
-    cache.bind_to_bus
+    Primer::Worker.bind_to_queue "changes"
     Primer::Worker::ActiveRecordAgent.bind_to_bus
     sync
     
