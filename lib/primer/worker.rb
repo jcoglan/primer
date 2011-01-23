@@ -70,7 +70,7 @@ module Primer
     end
     
     class Result
-      include EventMachine::Deferrable
+      include EM::Deferrable
     end
     
   end
