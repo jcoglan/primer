@@ -24,8 +24,7 @@ describe Primer::Bus::Memory do
   it_should_behave_like "primer event bus"
 end
 
-# describe Primer::Bus::AMQP do
-#   let(:bus) { Primer::Bus::AMQP.new(:queue => 'data_changes') }
-#   it_should_behave_like "primer event bus"
-# end
-# 
+describe Primer::Bus::AMQP do
+  let(:bus) { Primer::Bus::AMQP.new(:queue => 'data_changes') }
+  it_should_behave_like "primer event bus"
+end

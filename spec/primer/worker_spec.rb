@@ -1,10 +1,10 @@
 require "spec_helper"
 
-describe Primer::Worker do
+shared_examples_for "primer worker" do
   let(:detachable) { Detachable.new }
   
   before do
-    Primer.bus = Primer::Bus::Memory.new(:async => true)
+    Primer.bus = bus
     Primer::Worker.bind_to_queue "concat"
     $concat_result = nil
   end
@@ -24,5 +24,17 @@ describe Primer::Worker do
       sleep 1.0
       $concat_result.should == "these, words"
     end
+  end
+end
+
+describe Primer::Worker do
+  describe "with an in-memory bus" do
+    let(:bus) { Primer::Bus::Memory.new(:async => true) }
+    it_should_behave_like "primer worker"
+  end
+  
+  describe "with an AMQP bus" do
+    let(:bus) { Primer::Bus::AMQP.new(:queue => "data_changes_#{Helper.next_id}") }
+    it_should_behave_like "primer worker"
   end
 end
