@@ -12,6 +12,7 @@ require dir + '/models/blog_post'
 # Configure Primer with a Redis cache and AMQP bus
 Primer.cache = Primer::Cache::Redis.new
 Primer.bus   = Primer::Bus::AMQP.new(:queue => 'blog_changes')
+Primer.ssi   = true
 
 # Enable real-time page updates
 Primer.real_time = true

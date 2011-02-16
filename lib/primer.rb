@@ -17,10 +17,11 @@ module Primer
   autoload :Lazyness, ROOT + '/primer/lazyness'
   autoload :Helpers,  ROOT + '/primer/helpers'
   autoload :RealTime, ROOT + '/primer/real_time'
+  autoload :SSI,      ROOT + '/primer/ssi'
   autoload :Worker,   ROOT + '/primer/worker'
   
   class << self
-    attr_accessor :cache, :bus, :real_time
+    attr_accessor :cache, :bus, :real_time, :ssi
   end
   
   self.bus = Bus::Memory.new
