@@ -31,7 +31,7 @@ module Primer
   end
   
   def self.serialize(object)
-    JSON.unparse([object])
+    object.respond_to?(:to_json) ? [object].to_json : JSON.unparse([object])
   end
   
   def self.deserialize(string)
