@@ -203,7 +203,7 @@ shared_examples_for "primer cache" do
   describe "throttling" do
     before do
       cache.routes = Primer::RouteSet.new do
-        get("/data") { [BlogPost.first.title, Person.first.name] }
+        get("/data") { [BlogPost.first.title, Person.first.name] * ', ' }
       end
       cache.throttle = 0.5
       cache.compute("/data")
@@ -218,13 +218,13 @@ shared_examples_for "primer cache" do
     
     it "regenerates after the given throttle time, not after the first trigger" do
       @post.update_attribute(:title, "The new title")
-      cache.get("/data").should == ["roflmillions", "Abe"]
+      cache.get("/data").should == "roflmillions, Abe"
       
       @person.update_attribute(:name, "The new name")
-      cache.get("/data").should == ["roflmillions", "Abe"]
+      cache.get("/data").should == "roflmillions, Abe"
       
       sleep 1.0
-      cache.get("/data").should == ["The new title", "The new name"]
+      cache.get("/data").should == "The new title, The new name"
     end
   end
   
@@ -246,12 +246,6 @@ shared_examples_for "primer cache" do
     
     it "raises an error if any invalid key is used" do
       lambda { cache.put("invalid", "hmm") }.should raise_error(Primer::InvalidKey)
-    end
-    
-    it "can store arbitrary data" do
-      value = ["foo", 4, [5, "bar"], {"qux" => [6, 7]}]
-      cache.put("/key", value)
-      cache.get("/key").should == value
     end
   end
   

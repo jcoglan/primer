@@ -17,7 +17,7 @@ module Primer
       
       def put(cache_key, value)
         validate_key(cache_key)
-        @redis.set(cache_key, Primer.serialize(value))
+        @redis.set(cache_key, value)
         publish_change(cache_key)
         RealTime.publish(cache_key, value)
       end
@@ -25,7 +25,7 @@ module Primer
       def get(cache_key)
         validate_key(cache_key)
         string = @redis.get(cache_key)
-        string ? Primer.deserialize(string) : nil
+        string ? string : nil
       end
       
       def has_key?(cache_key)

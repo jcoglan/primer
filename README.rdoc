@@ -191,6 +191,63 @@ bus and inject arbitrary HTML into your pages.
   Primer::RealTime.password = 'super_secret_password'
 
 
+=== SSI
+
+Server-side includes (SSI) let you embed pages in each other using special HTML
+comments. For example, instead of having my Ruby app render the value of the
+key <tt>/posts/1/title</tt>, I could make it print:
+
+  <!--# include virtual="/posts/1/title" -->
+
+The front-end server can then deal with injecting the cached values into the
+page, and will typically do a faster job of it than if your app composed the
+page itself.
+
+To use SSI, just set this flag in your application setup. Your app will then
+print SSI tags instead of reading and rendering from the cache itself.
+
+  Primer.ssi = true
+
+I find that using Nginx with the Redis module works well for this. Here's a
+server config to get up and running:
+
+  upstream primer_backend {
+    server 127.0.0.1:9292;
+  }
+
+  server {
+    listen 80;
+    server_name primer;
+    ssi on;
+    
+    location / {
+      default_type text/html;
+
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_redirect off;
+
+      set $redis_key $uri;
+      redis_pass 127.0.0.1:6379;
+
+      proxy_intercept_errors on;
+      error_page 404 502 = /fallback$uri;
+    }
+
+    location /fallback/ {
+      internal;
+
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_redirect off;
+
+      proxy_pass http://primer_backend/;
+    }
+  }
+
+
 == Examples
 
 See <tt>example/README.rdoc</tt>, a little Sinatra blog with a Redis cache,

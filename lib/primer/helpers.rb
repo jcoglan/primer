@@ -4,7 +4,7 @@ module Primer
     module ERB
       def primer(cache_key, tag_name = :div, &block)
         if Primer.ssi and not block_given?
-          return %Q{<!--# include virtual="/primer_cache#{cache_key}" -->}
+          return %Q{<!--# include virtual="#{cache_key}" -->}
         end
         
         result = Primer.cache.compute(cache_key) do
