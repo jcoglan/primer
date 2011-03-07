@@ -57,11 +57,19 @@ a worker. Each data change message goes to only one worker process so you
 won't duplicate any work.
 
 
-=== console
+=== console.rb
 
-You can interact with the model by starting IRB with the app's environment:
+You can interact with the model by starting IRB with the app's environment.
+Because EventMachine does not play nice with IRB, you may need to use the
+custom console to script the application:
 
-  irb -r ./environment.rb
+  # in one shell:
+  ruby console.rb server
+  
+  # in another shell
+  ruby console.rb client
+  >> require './environment'
+  >> etc.
 
 Go and create posts and change their data to see how the front-end reacts.
 To get the real-time updates to work you must have a worker running to
