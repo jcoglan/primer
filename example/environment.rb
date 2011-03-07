@@ -21,11 +21,13 @@ Primer::RealTime.password = 'omg_rofl_scale'
 # Set up cache generation routes
 Primer.cache.routes do
   get '/posts/:id/date' do
-    BlogPost.find(params[:id]).created_at.strftime('%A %e %B %Y')
+    post = BlogPost.find(params[:id])
+    post.created_at.strftime('%A %e %B %Y')
   end
   
   get '/posts/:id/title' do
-    BlogPost.find(params[:id]).title.upcase
+    post = BlogPost.find(params[:id])
+    post.title.upcase
   end
 end
 
