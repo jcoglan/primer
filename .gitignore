@@ -1,4 +1,6 @@
 *.sqlite3
+.redcar
+Gemfile.lock
 doc
 pkg
 rdoc

@@ -1,6 +1,9 @@
 dir = File.expand_path(File.dirname(__FILE__))
 $:.unshift(dir)
 
+require 'rubygems'
+require 'bundler/setup'
+
 require dir + '/../lib/primer'
 require 'tilt'
 require 'erb'

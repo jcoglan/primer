@@ -1,4 +1,4 @@
-require 'mq'
+require 'amqp'
 
 module Primer
   class Bus
@@ -25,7 +25,8 @@ module Primer
         Faye.ensure_reactor_running!
         return @queue if defined?(@queue)
         raise "I need a queue name!" unless @config[:queue]
-        @queue = MQ.new.queue(@config[:queue])
+        amqp_klass = defined?(MQ) ? MQ : ::AMQP::Channel
+        @queue = amqp_klass.new.queue(@config[:queue])
       end
       
       def bind
