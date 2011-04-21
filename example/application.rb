@@ -14,12 +14,12 @@ class Application < Sinatra::Base
   helpers { include Primer::Helpers::ERB }
   
   get '/' do
-    @posts = BlogPost.all
+    @posts = Post.all
     erb :index
   end
   
   get '/posts/:id' do
-    @post = BlogPost.find(params[:id])
+    @post = Post.find(params[:id])
     erb :show
   end
 end

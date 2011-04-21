@@ -1,0 +1,6 @@
+<h4>Comments</h4>
+
+<% @post.comments.each do |comment| %>
+  <h5><%= comment.created_at.strftime('%A %e %B %Y') %></h5>
+  <p><%= comment.body %></p>
+<% end %>

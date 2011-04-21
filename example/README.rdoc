@@ -12,9 +12,9 @@ install some gems, build the database then use Rack:
 === models
 
 Let's take a look at the internals. In the +models+ directory, you'll see a
-simple BlogPost model:
+simple blog post model:
 
-  class BlogPost < ActiveRecord::Base
+  class Post < ActiveRecord::Base
     include Primer::Watcher
   end
 
