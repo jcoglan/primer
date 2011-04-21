@@ -5,25 +5,22 @@ module Primer
       def self.bind_to_bus
         Primer.bus.subscribe :active_record do |event, class_name, attributes, changes|
           model = class_name.constantize.new(attributes)
+          
           model.instance_eval do
             @attributes = attributes
             @changed_attributes = changes if changes
           end
-          __send__("on_#{event}", model)
+          
+          case event
+            when 'create'
+              notify_belongs_to_associations(model)
+            when 'update'
+              notify_attributes(model, model.changes)
+            when 'destroy'
+              notify_attributes(model, model.attributes)
+              notify_has_many_associations(model)
+          end
         end
-      end
-      
-      def self.on_create(model)
-        notify_belongs_to_associations(model)
-      end
-      
-      def self.on_update(model)
-        notify_attributes(model, model.changes)
-      end
-      
-      def self.on_destroy(model)
-        notify_attributes(model, model.attributes)
-        notify_has_many_associations(model)
       end
       
       def self.notify_attributes(model, fields)
