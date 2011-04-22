@@ -9,6 +9,14 @@ module Primer
         agent.run!
         agent
       end
+      
+      def self.topic(topic_name = nil)
+        @topic_name ||= topic_name
+      end
+      
+      def run!
+        Primer.bus.subscribe(self.class.topic) { |m| on_message(m) }
+      end
     end
     
     autoload :ActiveRecordAgent, ROOT + '/primer/worker/active_record_agent'

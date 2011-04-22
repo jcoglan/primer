@@ -2,25 +2,26 @@ module Primer
   class Worker
     
     class ActiveRecordAgent < Agent
-      def run!
-        Primer.bus.subscribe(:active_record) { |event, class_name, attributes, changes|
-          model = class_name.constantize.new(attributes)
-          
-          model.instance_eval do
-            @attributes = attributes
-            @changed_attributes = changes if changes
-          end
-          
-          case event
-            when 'create'
-              notify_belongs_to_associations(model)
-            when 'update'
-              notify_attributes(model, model.changes)
-            when 'destroy'
-              notify_attributes(model, model.attributes)
-              notify_has_many_associations(model)
-          end
-        }
+      topic :active_record
+      
+      def on_message(message)
+        event, class_name, attributes, changes = *message
+        model = class_name.constantize.new(attributes)
+        
+        model.instance_eval do
+          @attributes = attributes
+          @changed_attributes = changes if changes
+        end
+        
+        case event
+          when 'create'
+            notify_belongs_to_associations(model)
+          when 'update'
+            notify_attributes(model, model.changes)
+          when 'destroy'
+            notify_attributes(model, model.attributes)
+            notify_has_many_associations(model)
+        end
       end
       
       def notify_attributes(model, fields)

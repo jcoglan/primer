@@ -62,13 +62,13 @@ output is cached, the block will not be called again. The cache is invalidated
 when (and only when) the title of <tt>@post</tt> changes; Primer figures this
 out and you don't need to write any cache sweeping code.
 
-Finally you need to bind the cache to the event bus, unless you want to run the
-cache monitoring work in a background process (see below):
+Finally you need to run the cache agent, unless you want to run the cache
+monitoring work in a background process (see below):
 
-  Primer.cache.bind_to_bus
+  Primer::Worker::ChangesAgent.run!
   
   # If you're using ActiveRecord
-  Primer::Worker::ActiveRecordAgent.bind_to_bus
+  Primer::Worker::ActiveRecordAgent.run!
 
 
 === Declaring cache generators
