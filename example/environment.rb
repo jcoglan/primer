@@ -16,8 +16,8 @@ Primer.bus   = Primer::Bus::AMQP.new(:queue => 'blog_changes')
 
 # If you don't want to use AMQP, delete the above bus config
 # and add these lines to run invalidation work in this process:
-# Primer.cache.bind_to_bus
-# Primer::Worker::ActiveRecordAgent.bind_to_bus
+# Primer::Worker::ActiveRecordAgent.run!
+# Primer::Worker::ChangesAgent.run!
 
 # Enable real-time page updates
 Primer.real_time = true

@@ -14,7 +14,7 @@ describe Primer::Watcher::ActiveRecordMacros do
     
     @artist.concerts << @festival
     
-    Primer::Worker::ActiveRecordAgent.bind_to_bus
+    Primer::Worker::ActiveRecordAgent.run!
     Primer::Watcher.enable!
   end
   

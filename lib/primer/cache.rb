@@ -22,10 +22,6 @@ module Primer
       @routes
     end
     
-    def bind_to_bus
-      Primer.bus.subscribe(:changes) { |attribute| changed(attribute) }
-    end
-    
     def compute(cache_key)
       return get(cache_key) if has_key?(cache_key)
       
@@ -51,24 +47,14 @@ module Primer
       result
     end
     
-    def changed(attribute)
-      keys_for_attribute(attribute).each do |cache_key|
-        block = lambda do
-          invalidate(cache_key)
-          regenerate(cache_key)
-        end
-        @throttle ? timeout(cache_key, &block) : block.call
-      end
+    def regenerate(cache_key)
+      compute(cache_key) rescue nil
     end
     
   private
     
     def publish_change(cache_key)
       Primer.bus.publish(:changes, primer_identifier + ['get', cache_key])
-    end
-    
-    def regenerate(cache_key)
-      compute(cache_key) rescue nil
     end
     
     def validate_key(cache_key)

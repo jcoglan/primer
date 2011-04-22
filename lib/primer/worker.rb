@@ -4,6 +4,7 @@ module Primer
     class ConfigError < StandardError ; end
     
     autoload :ActiveRecordAgent, ROOT + '/primer/worker/active_record_agent'
+    autoload :ChangesAgent,      ROOT + '/primer/worker/changes_agent'
     
     def run
       raise ConfigError.new('No cache present') unless Primer.cache
@@ -21,8 +22,8 @@ module Primer
           puts "[changes] #{ args.inspect }"
         end
         
-        ActiveRecordAgent.bind_to_bus
-        Primer.cache.bind_to_bus
+        ActiveRecordAgent.run!
+        ChangesAgent.run!
         
         puts "Listening for messages..."
         puts

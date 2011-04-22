@@ -5,8 +5,8 @@ shared_examples_for "primer cache" do
     Primer.cache = cache
     Primer.bus   = bus
     
-    cache.bind_to_bus
-    Primer::Worker::ActiveRecordAgent.bind_to_bus
+    Primer::Worker::ChangesAgent.run!
+    Primer::Worker::ActiveRecordAgent.run!
     sync
     
     @person   = Person.create(:name => "Abe")

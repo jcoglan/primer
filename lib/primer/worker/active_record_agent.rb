@@ -2,7 +2,7 @@ module Primer
   class Worker
     
     class ActiveRecordAgent
-      def self.bind_to_bus
+      def self.run!
         Primer.bus.subscribe :active_record do |event, class_name, attributes, changes|
           model = class_name.constantize.new(attributes)
           
