@@ -14,6 +14,11 @@ require dir + '/models/comment'
 Primer.cache = Primer::Cache::Redis.new
 Primer.bus   = Primer::Bus::AMQP.new(:queue => 'blog_changes')
 
+# If you don't want to use AMQP, delete the above bus config
+# and add these lines to run invalidation work in this process:
+# Primer.cache.bind_to_bus
+# Primer::Worker::ActiveRecordAgent.bind_to_bus
+
 # Enable real-time page updates
 Primer.real_time = true
 Primer::RealTime.bayeux_server = 'http://0.0.0.0:9292'
