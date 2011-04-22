@@ -1,9 +1,9 @@
 module Primer
   class Worker
     
-    class ActiveRecordAgent
-      def self.run!
-        Primer.bus.subscribe :active_record do |event, class_name, attributes, changes|
+    class ActiveRecordAgent < Agent
+      def run!
+        Primer.bus.subscribe(:active_record) { |event, class_name, attributes, changes|
           model = class_name.constantize.new(attributes)
           
           model.instance_eval do
@@ -20,10 +20,10 @@ module Primer
               notify_attributes(model, model.attributes)
               notify_has_many_associations(model)
           end
-        end
+        }
       end
       
-      def self.notify_attributes(model, fields)
+      def notify_attributes(model, fields)
         foreign_keys = model.class.primer_foreign_key_mappings
         
         fields.each do |attribute, value|
@@ -35,14 +35,14 @@ module Primer
         end
       end
       
-      def self.notify_belongs_to_associations(model)
+      def notify_belongs_to_associations(model)
         model.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :belongs_to
           notify_belongs_to_association(model, assoc.name)
         end
       end
       
-      def self.notify_belongs_to_association(model, assoc_name, change = nil)
+      def notify_belongs_to_association(model, assoc_name, change = nil)
         assoc = model.class.reflect_on_association(assoc_name)
         owner_class = assoc.class_name.constantize
         
@@ -62,7 +62,7 @@ module Primer
         notify_has_many_through_association(previous, mirror.name)
       end
       
-      def self.notify_has_many_associations(model)
+      def notify_has_many_associations(model)
         model.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :has_many
           next if assoc.options[:dependent] == :destroy
@@ -80,7 +80,7 @@ module Primer
         end
       end
       
-      def self.notify_has_many_through_association(model, through_name)
+      def notify_has_many_through_association(model, through_name)
         model.class.reflect_on_all_associations.each do |assoc|
           next unless assoc.macro == :has_many
           
@@ -100,7 +100,7 @@ module Primer
         end
       end
       
-      def self.mirror_association(object_class, related_class, macro)
+      def mirror_association(object_class, related_class, macro)
         related_class.reflect_on_all_associations.find do |mirror_assoc|
           mirror_assoc.macro == macro and
           mirror_assoc.class_name == object_class.name

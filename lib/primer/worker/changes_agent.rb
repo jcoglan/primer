@@ -1,9 +1,9 @@
 module Primer
   class Worker
     
-    class ChangesAgent
-      def self.run!
-        Primer.bus.subscribe :changes do |attribute|
+    class ChangesAgent < Agent
+      def run!
+        Primer.bus.subscribe(:changes) { |attribute|
           cache = Primer.cache
           cache.keys_for_attribute(attribute).each do |cache_key|
             block = lambda do
@@ -12,7 +12,7 @@ module Primer
             end
             cache.throttle ? cache.timeout(cache_key, &block) : block.call
           end
-        end
+        }
       end
     end
     

@@ -3,10 +3,18 @@ module Primer
     
     class ConfigError < StandardError ; end
     
+    class Agent
+      def self.run!
+        agent = new
+        agent.run!
+        agent
+      end
+    end
+    
     autoload :ActiveRecordAgent, ROOT + '/primer/worker/active_record_agent'
     autoload :ChangesAgent,      ROOT + '/primer/worker/changes_agent'
     
-    def run
+    def run!
       raise ConfigError.new('No cache present') unless Primer.cache
       raise ConfigError.new('No message bus present') unless Primer.bus
       
