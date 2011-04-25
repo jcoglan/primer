@@ -1,5 +1,6 @@
 *.sqlite3
 .redcar
+*.rbc
 Gemfile.lock
 doc
 pkg
