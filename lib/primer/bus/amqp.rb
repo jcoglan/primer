@@ -1,4 +1,5 @@
 require 'amqp'
+require 'mq'
 
 module Primer
   class Bus
