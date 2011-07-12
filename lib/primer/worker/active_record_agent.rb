@@ -102,9 +102,12 @@ module Primer
       end
       
       def mirror_association(object_class, related_class, macro)
+        long_name  = object_class.name
+        short_name = long_name.split('::').last
+        
         related_class.reflect_on_all_associations.find do |mirror_assoc|
           mirror_assoc.macro == macro and
-          mirror_assoc.class_name == object_class.name
+          [long_name, short_name].include?(mirror_assoc.class_name)
         end
       end
     end
