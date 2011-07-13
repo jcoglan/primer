@@ -1,5 +1,5 @@
 require 'amqp'
-require 'mq'
+require 'mq' unless defined? AMQP::Channel
 
 module Primer
   class Bus
