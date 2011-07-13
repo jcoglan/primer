@@ -1,5 +1,5 @@
 class Post < ActiveRecord::Base
-  has_many :comments
   include Primer::Watcher
+  has_many :comments
 end
 

@@ -29,7 +29,7 @@ just declare how to render your site, Primer does the rest.
 == Enough waffle, show me the code!
 
 The following is the minimal, 'hello world' use case. Get your ActiveRecord
-model, put a mixn in it (<em>after</em> declaring the model's associations):
+model, put a mixn in it:
 
   class BlogPost < ActiveRecord::Base
     include Primer::Watcher

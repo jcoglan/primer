@@ -1,5 +1,5 @@
 class Comment < ActiveRecord::Base
-  belongs_to :post
   include Primer::Watcher
+  belongs_to :post
 end
 

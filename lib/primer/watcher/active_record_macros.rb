@@ -10,6 +10,16 @@ module Primer
         klass.after_destroy(:notify_primer_after_destroy)
       end
       
+      def has_many(name, *args)
+        watch_calls_to(name)
+        super
+      end
+      
+      def belongs_to(name, *args)
+        watch_calls_to(name)
+        super
+      end
+      
       def attributes_watchable_by_primer
         attributes = columns + reflect_on_all_associations
         attributes.map { |c| c.name.to_s }
