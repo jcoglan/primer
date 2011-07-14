@@ -1,6 +1,6 @@
-require 'json'
 require 'faye'
 require 'set'
+require 'yaml'
 
 module Primer
   ROOT = File.expand_path(File.dirname(__FILE__))
@@ -29,11 +29,11 @@ module Primer
   end
   
   def self.serialize(object)
-    object.respond_to?(:to_json) ? [object].to_json : JSON.unparse([object])
+    YAML.dump([object])
   end
   
   def self.deserialize(string)
-    JSON.parse(string).first
+    YAML.load(string).first
   end
 end
 

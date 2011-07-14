@@ -13,7 +13,6 @@ Gem::Specification.new do |s|
   s.files             = %w(README.rdoc) + Dir.glob("{spec,lib,example}/**/*")
   s.require_paths     = ["lib"]
 
-  s.add_dependency("json", ">= 1.4.6")
   s.add_dependency("redis", ">= 2.1.1")
   s.add_dependency("sinatra", ">= 1.1.0")
   s.add_dependency("amqp", ">= 0.6.7")
