@@ -1,3 +1,6 @@
+# EventMachine-aware console by Aman Gupta
+# https://gist.github.com/145471
+
 require 'rubygems'
 require 'eventmachine'
 require 'stringio'
