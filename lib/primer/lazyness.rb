@@ -36,6 +36,7 @@ module Primer
       def method_missing(method_name, *args, &block)
         if @load_method.to_s == 'eager_method_missing'
           if method_name.to_s == @arguments.first.to_s.gsub(/^find_by_/, '')
+            Watcher.log(self, method_name.to_sym, args, block, @arguments[1])
             return @arguments[1]
           else
             return __subject__.__send__(method_name, *args, &block)
@@ -43,6 +44,7 @@ module Primer
         end
         
         if method_name.to_s == @primary_key.to_s
+          Watcher.log(self, method_name.to_sym, args, block, @arguments.first)
           return @arguments.first
         end
         
