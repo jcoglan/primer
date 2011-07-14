@@ -22,12 +22,12 @@ shared_examples_for "erb helper" do
   describe "#primer" do
     describe "with an empty cache" do
       it "renders the contents of the block" do
-        output.should == "Welcome, Master\nHello, Aaron\nThanks\n"
+        output.strip.should == "Welcome, Master\nHello, Aaron"
       end
       
       it "uses the model to get data" do
         context.should_receive(:name).and_return("Abe")
-        output.should == "Welcome, Master\nHello, Abe\nThanks\n"
+        output.strip.should == "Welcome, Master\nHello, Abe"
       end
       
       it "writes the block result to the cache" do
@@ -46,10 +46,21 @@ shared_examples_for "erb helper" do
       end
       
       it "renders the cached value into the template" do
-        output.should == "Welcome, Master\nText from the cache\nThanks\n"
+        output.strip.should == "Welcome, Master\nText from the cache"
       end
     end
   end
+end
+
+describe "Sinatra ERB templates" do
+  let(:context) { Context.new }
+  
+  let :output do
+    template = Tilt[:erb].new("spec/templates/page.erb", 0, :outvar => "@_out_buf")
+    template.render(context)
+  end
+  
+  it_should_behave_like "erb helper"
 end
 
 describe "Rails3 ERB templates" do
@@ -71,17 +82,6 @@ describe "Rails3 ERB templates" do
     controller.render(:file => "spec/templates/page.erb", :action => "show") rescue
     body = controller.response_body
     Array === body ? body.first : body
-  end
-  
-  it_should_behave_like "erb helper"
-end
-
-describe "Sinatra ERB templates" do
-  let(:context) { Context.new }
-  
-  let :output do
-    template = Tilt[:erb].new("spec/templates/page.erb", 0, :outvar => "@_out_buf")
-    template.render(context)
   end
   
   it_should_behave_like "erb helper"
