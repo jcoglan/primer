@@ -6,11 +6,10 @@ Gem::Specification.new do |s|
   s.email             = "jcoglan@gmail.com"
   s.homepage          = "http://github.com/jcoglan/primer"
 
-  s.has_rdoc          = true
   s.extra_rdoc_files  = %w(README.rdoc example/README.rdoc)
   s.rdoc_options      = %w(--main README.rdoc --title Primer)
 
-  s.files             = %w(README.rdoc) + Dir.glob("{spec,lib,example}/**/*")
+  s.files             = %w(History.txt README.rdoc) + Dir.glob("{spec,lib,example}/**/*")
   s.require_paths     = ["lib"]
 
   s.add_dependency("redis", ">= 2.1.1")

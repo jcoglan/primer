@@ -1,0 +1,17 @@
+=== 0.2.0 / 2011-07-14
+
+* New Lazyness module to avoid ActiveRecord database calls when not needed
+* Handle namespaced ActiveRecord classes when traversing associations
+* Allow Watcher to be added to ActiveRecord classes before associations
+* Ensure compatibility with latest Sinatra router
+* Use AMQP::Channel instead of MQ when using newer amqp gems
+* Add EventMachine-compatible console for platforms with blocking IRBs
+* Move cache updating logic into Worker::ChangesAgent
+
+
+=== 0.1.0 / 2010-11-25
+
+* Initial release. Includes caching, method logging, cache expiry and
+  regeneration, offline workers, real-time page updates and ActiveRecord
+  integration for updating object graphs
+

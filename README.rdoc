@@ -208,6 +208,6 @@ welcome, pull requests considered, bug reports likely to gather dust.
 
 == License
 
-Copyright (c) 2010 Songkick.com, James Coglan. Named by the inimitable
+Copyright (c) 2010-2011 Songkick.com, James Coglan. Named by the inimitable
 grillpanda[http://github.com/grillpanda]. Released under the MIT license.
 
