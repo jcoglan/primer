@@ -25,45 +25,45 @@ That's all we need for Primer to monitor how our data changes.
 
 === public, views
 
-The +public+ and +views+ directories are used by the Sinatra app, and should
-be pretty self-explanatory. Note which bits of the views are cached, and which
+The +public+ and +views+ directories are used by the Sinatra app, and should be
+pretty self-explanatory. Note which bits of the views are cached, and which
 parts don't use blocks - we set these keys up in <tt>environment.rb</tt>.
 
 
 === application.rb
 
-The <tt>application.rb</tt> file is a simple Sinatra app - it loads the
-model from <tt>environment.rb</tt> and just sets up a couple of pages.
+The <tt>application.rb</tt> file is a simple Sinatra app - it loads the model
+from <tt>environment.rb</tt> and just sets up a couple of pages.
 
 
 === environment.rb
 
-The meat of the system is in <tt>environment.rb</tt>. This file loads the
-gems we need, loads our models, and configures Primer. See that file for more
-details, but note that it uses an AMQP bus - this means we can compute cache
-changes outside the app process. You'll need to start <tt>worker.rb</tt> so
-that your changes get processed.
+The meat of the system is in <tt>environment.rb</tt>. This file loads the gems
+we need, loads our models, and configures Primer. See that file for more details,
+but note that it uses an AMQP bus - this means we can compute cache changes
+outside the app process. You'll need to start <tt>worker.rb</tt> so that your
+changes get processed.
 
 
 === worker.rb
 
 This file just loads <tt>environment.rb</tt>, then tells Primer to start a
-worker. The call to <tt>Primer.worker!</tt> is blocking, and makes Primer
-pick up messages from the AMQP bus and process them. You can start as many
-of these as you like to distribute the work. Just run:
+worker. The call to <tt>Primer.worker!</tt> is blocking, and makes Primer pick
+up messages from the AMQP bus and process them. You can start as many of these
+as you like to distribute the work. Just run:
 
   ruby worker.rb
 
 If you don't run any of these, messages will build up in AMQP until you start
-a worker. Each data change message goes to only one worker process so you
-won't duplicate any work.
+a worker. Each data change message goes to only one worker process so you won't
+duplicate any work.
 
 
 === console.rb
 
 You can interact with the model by starting IRB with the app's environment.
-Because EventMachine does not play nice with IRB, you may need to use the
-custom console to script the application:
+Because EventMachine does not play nice with IRB, you may need to use the custom
+console to script the application:
 
   # in one shell:
   ruby console.rb server
@@ -73,7 +73,7 @@ custom console to script the application:
   >> require './environment'
   >> etc.
 
-Go and create posts and change their data to see how the front-end reacts.
-To get the real-time updates to work you must have a worker running to
-update caches; this is not done by the web app process.
+Go and create posts and change their data to see how the front-end reacts. To
+get the real-time updates to work you must have a worker running to update
+caches; this is not done by the web app process.
 
