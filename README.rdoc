@@ -104,6 +104,46 @@ generate the cache of the first post's title:
   Primer.cache.compute("/posts/1/title")
 
 
+=== Lazy loading
+
+A common problem when caching view fragments is not knowing whether you need to
+load database objects in the controller. If the parts of the view that use that
+object are already cached, there's no point loading the object since it won't be
+needed to render the page.
+
+Rails has some lazy-loading capability built in, for example if you have a model
+that says <tt>BlogPost.has_many :comments</tt>, a call to <tt>blog_post.comments</tt>
+won't actually load the comments until you call <tt>each</tt> on that collection
+to read the data. Primer introduces the same idea for all database calls.
+
+If you <tt>include Primer::Lazyness</tt> in a model, then <tt>Model.find(id)</tt>
+will not call the database. It just returns an object with the ID you asked for,
+and won't actually load the model from the database until you try to access
+other properties that we cannot infer from the <tt>find()</tt> call.
+
+For example, this makes it easy to load a model in the controller and use its ID
+to key cache fragments, safe in the knowledge that no unnecessary database calls
+will be made.
+
+  BlogPost < ActiveRecord::Base
+    include Primer::Lazyness
+  end
+  
+  # Does not call the database
+  post = BlogPost.find(1)
+  
+  # Does not call the database unless the title is not cached
+  primer "/posts/#{post.id}/title" do
+    post.title
+  end
+
+Primer also lazy-loads on other properties, for example if I call
+<tt>BlogPost.find_by_title("Hello World")</tt> then Primer will create an object
+whose <tt>title</tt> is <tt>"Hello World"</tt> without calling the database, but
+then if I ask for the object's <tt>id</tt> or other properties the real model is
+loaded.
+
+
 === Throttling
 
 Let's say you have a cache value that depends on many little bits of model data,
