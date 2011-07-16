@@ -4,8 +4,10 @@ This is a simple app that demonstrates how you can use Primer. It's based on
 ActiveRecord for the model and Sinatra for the front-end. To start it up,
 install some gems, build the database then use Rack:
 
-  gem install redis amqp faye sinatra activerecord sqlite3-ruby
+  bundle install
   ruby script/setup_database.rb
+  redis-server
+  rabbitmq-server
   rackup -s thin -E production config.ru
 
 
