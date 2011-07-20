@@ -1,3 +1,8 @@
+=== 0.2.1 / 2011-07-20
+
+* Fix in a bug in code that loads associated ActiveRecord classes
+
+
 === 0.2.0 / 2011-07-14
 
 * New Lazyness module to avoid ActiveRecord database calls when not needed
