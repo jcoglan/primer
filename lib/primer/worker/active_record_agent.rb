@@ -45,7 +45,7 @@ module Primer
       
       def notify_belongs_to_association(model, assoc_name, change = nil)
         assoc = model.class.reflect_on_association(assoc_name)
-        owner_class = assoc.class_name.constantize
+        owner_class = assoc.klass
         
         mirror = mirror_association(model.class, owner_class, :has_many)
         
@@ -69,8 +69,7 @@ module Primer
           next if assoc.options[:dependent] == :destroy
           
           model_id = model.__send__(model.class.primary_key)
-          klass    = assoc.class_name.constantize
-          related  = klass.find(:all, :conditions => {assoc.primary_key_name => model_id})
+          related  = assoc.klass.find(:all, :conditions => {assoc.primary_key_name => model_id})
           
           related.each do |object|
             mirror = mirror_association(model.class, object.class, :belongs_to)
@@ -89,7 +88,7 @@ module Primer
             Primer.bus.publish(:changes, model.primer_identifier + [assoc.name.to_s])
           end
           
-          assoc.class_name.constantize.reflect_on_all_associations.each do |secondary|
+          assoc.klass.reflect_on_all_associations.each do |secondary|
             next unless secondary.macro == :has_many and secondary.options[:through] and
                         secondary.source_reflection.active_record == model.class and
                         secondary.source_reflection.name == through_name
