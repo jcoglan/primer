@@ -45,22 +45,24 @@ module Primer
       
       def notify_belongs_to_association(model, assoc_name, change = nil)
         assoc = model.class.reflect_on_association(assoc_name)
-        owner_class = assoc.klass
         
-        mirror = mirror_association(model.class, owner_class, :has_many)
-        
-        if owner = model.__send__(assoc_name)
-          Primer.bus.publish(:changes, owner.primer_identifier + [mirror.name.to_s])
-          notify_has_many_through_association(owner, mirror.name)
+        mirror_associations(model, assoc, :has_many) do |mirror|
+          if owner = model.__send__(assoc_name)
+            Primer.bus.publish(:changes, owner.primer_identifier + [mirror.name.to_s])
+            notify_has_many_through_association(owner, mirror.name)
+          end
+          
+          return unless Array === change and change.first.any?
+          
+          owner_class = assoc.klass
+          old_id      = change.first.first
+          previous    = owner_class.find(:first, :conditions => {owner_class.primary_key => old_id})
+          
+          return unless previous
+          
+          Primer.bus.publish(:changes, previous.primer_identifier + [mirror.name.to_s])
+          notify_has_many_through_association(previous, mirror.name)
         end
-        
-        return unless Array === change and change.first.any?
-        old_id = change.first.first
-        previous = owner_class.find(:first, :conditions => {owner_class.primary_key => old_id})
-        return unless previous
-        
-        Primer.bus.publish(:changes, previous.primer_identifier + [mirror.name.to_s])
-        notify_has_many_through_association(previous, mirror.name)
       end
       
       def notify_has_many_associations(model)
@@ -72,10 +74,9 @@ module Primer
           related  = assoc.klass.find(:all, :conditions => {assoc.primary_key_name => model_id})
           
           related.each do |object|
-            mirror = mirror_association(model.class, object.class, :belongs_to)
-            next unless mirror
-            
-            Primer.bus.publish(:changes, object.primer_identifier + [mirror.name.to_s])
+            mirror_associations(model, assoc, :belongs_to) do |mirror|
+              Primer.bus.publish(:changes, object.primer_identifier + [mirror.name.to_s])
+            end
           end
         end
       end
@@ -100,13 +101,10 @@ module Primer
         end
       end
       
-      def mirror_association(object_class, related_class, macro)
-        long_name  = object_class.name
-        short_name = long_name.split('::').last
-        
-        related_class.reflect_on_all_associations.find do |mirror_assoc|
-          mirror_assoc.macro == macro and
-          [long_name, short_name].include?(mirror_assoc.class_name)
+      def mirror_associations(model, association, macro)
+        association.klass.reflect_on_all_associations.each do |mirror|
+          yield(mirror) if mirror.klass == model.class and
+                           mirror.macro == macro
         end
       end
     end
