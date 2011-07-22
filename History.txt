@@ -1,3 +1,8 @@
+=== 0.2.2 / 2011-07-22
+
+* Stop using AssociationReflection#class_name to match associations
+
+
 === 0.2.1 / 2011-07-20
 
 * Fix in a bug in code that loads associated ActiveRecord classes

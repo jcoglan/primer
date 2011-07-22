@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name              = "primer"
-  s.version           = "0.2.1"
+  s.version           = "0.2.2"
   s.summary           = "Intelligent caching, no observers necessary"
   s.author            = "James Coglan"
   s.email             = "jcoglan@gmail.com"
